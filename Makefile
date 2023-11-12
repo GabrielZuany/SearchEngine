@@ -19,7 +19,6 @@ clean:
 	$(MAKE) -C src/ clean
 	rm -f trab3
 	rm -f valgrind-out.txt
-	rm -f *.mst *.tsp *.tour
 
 valgrind:
 	$(MAKE) -C src/ valgrind VALARGS="../$(VALARGS)"

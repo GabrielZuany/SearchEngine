@@ -9,7 +9,7 @@ INCLUDE = include
 BUILDIR = build
 DEBUGDIR = $(BUILDIR)/debug
 RELEASEDIR = $(BUILDIR)/release
-LIBNAME = rtt
+LIBNAME = google_page_ranker
 LIBTARGET = lib$(LIBNAME).a
 SRCS = $(shell find . -type f -name '*.c' | sed 's|^./||')
 
@@ -23,10 +23,15 @@ LIBCONTAINERS          = containers
 LIBCONTAINERSDIRRELEASE = $(LIBCONTAINERSDIR)/build/release
 LIBCONTAINERSDIRDEBUG   = $(LIBCONTAINERSDIR)/build/debug
 
+LIBPAGEINDEXERDIR       = ../page_indexerlib
+LIBPAGEINDEXER          = page_indexer
+LIBPAGEINDEXERDIRRELEASE = $(LIBPAGEINDEXERDIR)/build/release
+LIBPAGEINDEXERDIRDEBUG   = $(LIBPAGEINDEXERDIR)/build/debug
+
 # CCompiler - é o compilador usado
 # CFLAGS - são as flags dadas ao compilador durante a compilação
 CC = gcc
-override CFLAGS += -Wall -Wextra -I $(INCLUDE) -I $(LIBCONTAINERSDIR)/include -lm
+override CFLAGS += -Wall -Wextra -I $(INCLUDE) -I $(LIBPAGEINDEXERDIR)/include -I $(LIBCONTAINERSDIR)/include -lm
 
 DEBUGFLAGS = -ggdb3 -O0 -DDEBUG
 RELEASEFLAGS = -O3 -DNDEBUG
@@ -49,10 +54,10 @@ debug: pre-build-debug build-debug
 
 # Compila todos os .o
 $(BUILDIR)/release/%.o : %.c
-	$(CC) -o $@ -c $< -L $(LIBCONTAINERSDIRRELEASE) -l$(LIBCONTAINERS) $(CFLAGS) $(RELEASEFLAGS)
+	$(CC) -o $@ -c $< -L $(LIBPAGEINDEXERDIRRELEASE) -l$(LIBPAGEINDEXER) -L $(LIBCONTAINERSDIRRELEASE) -l$(LIBCONTAINERS) $(CFLAGS) $(RELEASEFLAGS)
 
 $(BUILDIR)/debug/%.o : %.c
-	$(CC) -o $@ -c $< -L $(LIBCONTAINERSDIRRELEASE) -l$(LIBCONTAINERS) $(CFLAGS) $(DEBUGFLAGS)
+	$(CC) -o $@ -c $< -L $(LIBPAGEINDEXERDIRRELEASE) -l$(LIBPAGEINDEXER) -L $(LIBCONTAINERSDIRRELEASE) -l$(LIBCONTAINERS) $(CFLAGS) $(DEBUGFLAGS)
 
 # Preparativos para o build; Garante que o diretório build/ existe
 pre-build:
@@ -60,10 +65,12 @@ pre-build:
 
 pre-build-release: pre-build
 	mkdir -p $(RELEASEDIR)/
+	$(MAKE) -C $(LIBPAGEINDEXERDIR)/
 	$(MAKE) -C $(LIBCONTAINERSDIR)/
 
 pre-build-debug: pre-build
 	mkdir -p $(DEBUGDIR)/
+	$(MAKE) -C $(LIBPAGEINDEXERDIR)/ debug
 	$(MAKE) -C $(LIBCONTAINERSDIR)/ debug
 
 build-release : $(OBJSRELEASE)
