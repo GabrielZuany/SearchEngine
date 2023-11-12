@@ -1,0 +1,20 @@
+# Exclude giovanni
+giovanni
+
+trab3
+src/*.txt
+*.txt
+
+# build n archive artifacts
+build/
+*.o
+*.a
+
+# Diretório de entradas
+exemplo/
+
+# Saida do valgrind gerada por meio do Makefile
+valgrind-out.txt
+/.vs
+
+app.py
