@@ -7,6 +7,7 @@
 typedef void (*free_fn)(void *);
 typedef void *(*cpy_fn)(void *);
 typedef int (*cmp_fn)(const void *, const void *);
+typedef size_t (*hash_fn)(void *);
 
 typedef unsigned char byte;
 
