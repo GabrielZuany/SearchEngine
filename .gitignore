@@ -3,7 +3,7 @@ giovanni
 
 trab3
 src/*.txt
-*.txt
+#*.txt
 
 # build n archive artifacts
 build/
