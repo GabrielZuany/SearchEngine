@@ -17,4 +17,4 @@ exemplo/
 valgrind-out.txt
 /.vs
 
-.vscode/settings.json
+.vscode/settings.jsoninput/
