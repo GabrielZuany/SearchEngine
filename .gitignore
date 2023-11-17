@@ -17,4 +17,4 @@ exemplo/
 valgrind-out.txt
 /.vs
 
-app.py
+.vscode/settings.json
