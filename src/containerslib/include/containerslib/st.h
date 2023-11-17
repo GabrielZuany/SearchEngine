@@ -9,13 +9,13 @@ typedef struct St St;
 St *st_init(cmp_fn key_cmp);
 
 // Put key-value pair into the table: a[key] = val; .
-void st_put(St *self, void *key, void *val);
+void *st_put(St *self, void *key, void *val, void **out_key);
 // Value paired with key: a[key] .
 void *st_get(St *self, void *key);
 // Is there a value paired with key?
 bool st_contains(St *self, void *key);
 // Remove key (and its value) from table.
-void st_delete(St *self, void **ref_key);
+void *st_delete(St *self, void *key, void **out_key);
 // Is the table empty?
 bool st_empty(St *self);
 // Number of key-value pairs in the table.

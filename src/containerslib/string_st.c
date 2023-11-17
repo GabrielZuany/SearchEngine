@@ -18,8 +18,13 @@ StringSt *stringst_init() {
 }
 
 // Put key-value pair into the table: a[key] = val; .
-void stringst_put(StringSt *self, char *key, void *val) {
-    rbtree_put(self->rbtree, key, val);
+void *stringst_put(StringSt *self, char *key, void *val) {
+    char *out_key;
+    void *val = rbtree_put(self->rbtree, key, val, &out_key);
+    if (out_key != NULL)
+        free(out_key);
+
+    return val;
 }
 
 // Value paired with key: a[key] .
@@ -33,9 +38,11 @@ bool stringst_contains(StringSt *self, char *key) {
 }
 
 // Remove key (and its value) from table.
-void stringst_delete(StringSt *self, char *key) {
-    rbtree_delete(self->rbtree, &key);
-    free(key);
+void *stringst_delete(StringSt *self, char *key) {
+    char *out_key;
+    void *val = rbtree_delete(self->rbtree, key, &out_key);
+    free(out_key);
+    return val;
 }
 
 // Is the table empty?
@@ -49,37 +56,41 @@ int stringst_size(StringSt *self) {
 }
 
 // Smallest key.
-void *stringst_min(StringSt *self) {
+char *stringst_min(StringSt *self) {
     return rbtree_min(self->rbtree);
 }
 
 // Largest key.
-void *stringst_max(StringSt *self) {
+char *stringst_max(StringSt *self) {
     return rbtree_max(self->rbtree);
 }
 
 // Largest key less than or equal to key.
-void *stringst_floor(StringSt *self, char *key) {
+char *stringst_floor(StringSt *self, char *key) {
     return rbtree_floor(self->rbtree, key);
 }
 
 // Smallest key greater than to equal to key.
-void *stringst_ceiling(StringSt *self, char *key) {
+char *stringst_ceiling(StringSt *self, char *key) {
     return rbtree_ceiling(self->rbtree, key);
 }
 
 // Delete smallest key.
-void stringst_delmin(StringSt *self) {
+void *stringst_delmin(StringSt *self) {
     char *key;
-    rbtree_delmin(self->rbtree, &key);
+    void *val = rbtree_delmin(self->rbtree, &key);
     free(key);
+
+    return val;
 }
 
 // Delete largest key.
-void stringst_delmax(StringSt *self) {
+void *stringst_delmax(StringSt *self) {
     char *key;
-    rbtree_delmax(self->rbtree, &key);
+    void *val = rbtree_delmax(self->rbtree, &key);
     free(key);
+
+    return val;
 }
 
 // Visit all the key-value pairs in the order of their keys.

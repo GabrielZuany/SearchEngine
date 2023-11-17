@@ -73,7 +73,7 @@ RbTree *rbtree_init(cmp_fn key_cmp) {
     return self;
 }
 
-static struct _RbNode *__rbtree_put_node(struct _RbNode *node, void *key, void *val, cmp_fn tree_key_cmp, size_t *tree_size) {
+static struct _RbNode *__rbtree_put_node(struct _RbNode *node, void *key, void *val, cmp_fn tree_key_cmp, size_t *tree_size, void **out_key, void **out_value) {
     // Insert at bottom and color it red.
     if (node == NULL) {
         (*tree_size)++;
@@ -82,11 +82,15 @@ static struct _RbNode *__rbtree_put_node(struct _RbNode *node, void *key, void *
 
     int cmp = tree_key_cmp(key, node->key);
     if (cmp < 0)
-        node->left = __rbtree_put_node(node->left, key, val, tree_key_cmp, tree_size);
+        node->left = __rbtree_put_node(node->left, key, val, tree_key_cmp, tree_size, out_key, out_value);
     else if (cmp > 0)
-        node->right = __rbtree_put_node(node->right, key, val, tree_key_cmp, tree_size);
-    else
+        node->right = __rbtree_put_node(node->right, key, val, tree_key_cmp, tree_size, out_key, out_value);
+    else {
+        *out_key = node->key;
+        *out_value = node->val;
+        node->key = key;
         node->val = val;
+    }
 
     // Lean left.
     if (__rbtree_node_is_red(node->right) && !__rbtree_node_is_red(node->left))
@@ -103,12 +107,17 @@ static struct _RbNode *__rbtree_put_node(struct _RbNode *node, void *key, void *
     return node;
 }
 
-void rbtree_put(RbTree *self, void *key, void *val) {
-    self->root = __rbtree_put_node(self->root, key, val, self->key_cmp, &self->size);
+void *rbtree_put(RbTree *self, void *key, void *val, void **out_key) {
+    *out_key = NULL;
+    void *out_val = NULL;
+
+    self->root = __rbtree_put_node(self->root, key, val, self->key_cmp, &self->size, out_key, &out_val);
     self->root->isRed = false;
+
+    return out_val;
 }
 
-void *rbtree_get(RbTree *self, void *key) {
+void *rbtree_get(RbTree *self, void *key, void **out_key) {
     struct _RbNode *node = self->root;
 
     while (node != NULL) {
@@ -117,18 +126,22 @@ void *rbtree_get(RbTree *self, void *key) {
             node = node->left;
         else if (cmp > 0)
             node = node->right;
-        else
+        else {
+            *out_key = node->key;
             return node->val;
+        }
     }
 
+    *out_key = NULL;
     return NULL;
 }
 
 bool rbtree_contains(RbTree *self, void *key) {
-    return rbtree_get(self, key) != NULL;
+    void *_;
+    return rbtree_get(self, key, &_) != NULL;
 }
 
-void *rbtree_delete(RbTree *self, void **ref_key) {
+void *rbtree_delete(RbTree *self, void *key, void **out_key) {
     exception_throw_failure("rbtree_delete - Not implemented yet.");
 }
 
@@ -213,10 +226,16 @@ void *rbtree_ceiling(RbTree *self, void *key) {
 }
 
 void *rbtree_delmin(RbTree *self, void **out_key) {
+    if (rbtree_empty(self))
+        exception_throw_failure("rbtree_delmin - Empty tree.");
+
     exception_throw_failure("rbtree_delmin - Not implemented yet.");
 }
 
 void *rbtree_delmax(RbTree *self, void **out_key) {
+    if (rbtree_empty(self))
+        exception_throw_failure("rbtree_delmax - Empty tree.");
+
     exception_throw_failure("rbtree_delmax - Not implemented yet.");
 }
 

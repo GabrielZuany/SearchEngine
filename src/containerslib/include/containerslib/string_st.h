@@ -9,30 +9,30 @@ typedef struct StringSt StringSt;
 StringSt *stringst_init();
 
 // Put key-value pair into the table: a[key] = val; .
-void stringst_put(StringSt *self, char *key, void *val);
+void *stringst_put(StringSt *self, char *key, void *val);
 // Value paired with key: a[key] .
 void *stringst_get(StringSt *self, char *key);
 // Is there a value paired with key?
 bool stringst_contains(StringSt *self, char *key);
 // Remove key (and its value) from table.
-void stringst_delete(StringSt *self, char *key);
+void *stringst_delete(StringSt *self, char *key);
 // Is the table empty?
 bool stringst_empty(StringSt *self);
 // Number of key-value pairs in the table.
 int stringst_size(StringSt *self);
 
 // Smallest key.
-void *stringst_min(StringSt *self);
+char *stringst_min(StringSt *self);
 // Largest key.
-void *stringst_max(StringSt *self);
+char *stringst_max(StringSt *self);
 // Largest key less than or equal to key.
-void *stringst_floor(StringSt *self, char *key);
+char *stringst_floor(StringSt *self, char *key);
 // Smallest key greater than to equal to key.
-void *stringst_ceiling(StringSt *self, char *key);
+char *stringst_ceiling(StringSt *self, char *key);
 // Delete smallest key.
-void stringst_delmin(StringSt *self, char *key);
+void *stringst_delmin(StringSt *self, char *key);
 // Delete largest key.
-void stringst_delmax(StringSt *self, char *key);
+void *stringst_delmax(StringSt *self, char *key);
 // Visit all the key-value pairs in the order of their keys.
 void stringst_traverse(StringSt *self, void (*visit)(char *,  void *));
 

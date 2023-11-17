@@ -7,10 +7,10 @@ typedef struct RbTree RbTree;
 
 RbTree *rbtree_init(cmp_fn key_cmp);
 
-void rbtree_put(RbTree *self, void *key, void *val);
-void *rbtree_get(RbTree *self, void *key);
+void *rbtree_put(RbTree *self, void *key, void *val, void **out_key);
+void *rbtree_get(RbTree *self, void *key, void **out_key);
 bool rbtree_contains(RbTree *self, void *key);
-void *rbtree_delete(RbTree *self, void **ref_key);
+void *rbtree_delete(RbTree *self, void *key, void **out_key);
 bool rbtree_empty(RbTree *self);
 size_t rbtree_size(RbTree *self);
 

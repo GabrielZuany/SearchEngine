@@ -16,13 +16,14 @@ St *st_init(cmp_fn key_cmp) {
 }
 
 // Put key-value pair into the table: a[key] = val; .
-void st_put(St *self, void *key, void *val) {
-    rbtree_put(self->rbtree, key, val);
+void *st_put(St *self, void *key, void *val, void **out_key) {
+    return rbtree_put(self->rbtree, key, val, out_key);
 }
 
 // Value paired with key: a[key] .
 void *st_get(St *self, void *key) {
-    return rbtree_get(self->rbtree, key);
+    void *_;
+    return rbtree_get(self->rbtree, key, &_);
 }
 
 // Is there a value paired with key?
@@ -31,8 +32,8 @@ bool st_contains(St *self, void *key) {
 }
 
 // Remove key (and its value) from table.
-void st_delete(St *self, void **ref_key) {
-    rbtree_delete(self->rbtree, ref_key);
+void *st_delete(St *self, void *key, void **out_key) {
+    return rbtree_delete(self->rbtree, key, out_key);
 }
 
 // Is the table empty?
