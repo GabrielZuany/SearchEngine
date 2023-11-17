@@ -12,9 +12,10 @@ build/
 
 # Diretório de entradas
 exemplo/
+input/
 
 # Saida do valgrind gerada por meio do Makefile
 valgrind-out.txt
 /.vs
 
-.vscode/settings.jsoninput/
+.vscode/settings.json
