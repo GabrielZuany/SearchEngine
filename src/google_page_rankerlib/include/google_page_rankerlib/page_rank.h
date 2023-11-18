@@ -3,9 +3,7 @@
 #define DAMPING_FACTOR 0.85
 #define EPSILON 0.000001 // 10^-6
 
+double calc_page_rank(double *page_rank, ForwardList** out_links, ForwardList** in_links, int n_pages, int page_id);
 
 
-
-
-
-#endif // _PAGERANKERLIB_PAGE_RANK_H_
+#endif
