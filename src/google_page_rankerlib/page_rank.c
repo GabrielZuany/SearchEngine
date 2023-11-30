@@ -4,8 +4,19 @@
 #include "google_page_rankerlib/page_rank.h"
 #include "containerslib/forward_list.h"
 #include <math.h>
+#include <stdbool.h>
 
-double calc_page_rank(double *page_rank, ForwardList** out_links, ForwardList** in_links, int n_pages, int page_id) {
+double get_page_rank(double *page_rank,  ForwardList** out_links, ForwardList** in_links, int n_pages, int page_id){
+    __init_page_rank(page_rank, out_links, in_links, n_pages, page_id);
+    return page_rank[page_id];
+}
+
+void __init_page_rank(double *page_rank, ForwardList** out_links, ForwardList** in_links, int n_pages, int page_id) {
+    static bool already_initialized = false;
+    if (already_initialized) {
+        return;
+    }
+
     // power method initialization
     double *page_rank_new = malloc(n_pages * sizeof(double));
     for (int i = 0; i < n_pages; i++) {
@@ -16,6 +27,8 @@ double calc_page_rank(double *page_rank, ForwardList** out_links, ForwardList** 
     double delta = 0.0;
     double sum = 0.0;
     do {
+
+        // Calculate page rank for each page
         for (int i = 0; i < n_pages; i++) {
             sum = 0.0;
             Node* in_links_node = forward_list_get_head_node(in_links[i]);
@@ -56,5 +69,5 @@ double calc_page_rank(double *page_rank, ForwardList** out_links, ForwardList** 
 
     double result = page_rank[page_id];
     free(page_rank_new);
-    return result;
+    already_initialized = true;
 }
