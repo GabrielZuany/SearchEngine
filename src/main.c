@@ -3,12 +3,15 @@
 #include <string.h>
 #include <float.h>
 
+#include "containerslib/forward_list.h"
 #include "containerslib/utils.h"
 
 #include "page_indexerlib/page_indexer.h"
 
-#include "containerslib/forward_list.h"
 #include "google_page_rankerlib/page_rank.h"
+
+#include "enginelib/engine.h"
+#include "enginelib/search.h"
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -18,9 +21,10 @@ int main(int argc, char *argv[]) {
 
     char *input_directory = argv[1];
 
-    char *stop_words_path = utils_pathcat(input_directory, "stop_words.txt");
+    char* graph_path = utils_pathcat(input_directory, "graph.txt");
     char *index_path = utils_pathcat(input_directory, "index.txt");
     char *pages_folder_path = utils_pathcat(input_directory, "pages/");
+    char *stop_words_path = utils_pathcat(input_directory, "stop_words.txt");
 
     StringSet *stop_words = pageindexer_read_stop_words(stop_words_path);
     Index *index = pageindexer_create(index_path, pages_folder_path, stop_words);
@@ -28,9 +32,16 @@ int main(int argc, char *argv[]) {
     char* graph_path = utils_pathcat(input_directory, "graph.txt");
     ForwardList** out_links = google_page_ranker_read_links(graph_path);
 
-    free(stop_words_path);
+    engine_run(index, /* TODO: PR data,*/ stdin, stdout);
+
+    free(graph_path);
     free(index_path);
     free(pages_folder_path);
+    free(stop_words_path);
+
+    stringset_finish(stop_words);
+
+    index_finish(index);
 
     return 0;
 }

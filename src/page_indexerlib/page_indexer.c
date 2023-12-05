@@ -35,7 +35,7 @@ Index *pageindexer_create(const char *index_path, const char *pages_folder_path,
     free(page_name);
     fclose(index_file);
 
-    Index *index = index_init(word_pages_map);
+    Index *index = index_init(word_pages_map, stop_words);
 
     return index;
 }
@@ -83,6 +83,8 @@ static inline void __pageindexer_index_page(const char *page_name, const char *p
         if (line[read - 1] == '\n')
             line[read - 1] = '\0';
 
+        utils_inplacestrtolower(line);
+
         __pageindexer_index_page_line(line, stop_words, word_pages_map, page_name);
     }
 
@@ -100,8 +102,6 @@ static inline void __pageindexer_index_page_line(char *line, StringSet *stop_wor
             break;
 
         char *word = token;
-        
-        utils_inplacestrtolower(word);
 
         StringSet *pages = stringst_get(word_pages_map, word);
         if (pages == NULL) {
