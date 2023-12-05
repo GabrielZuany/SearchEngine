@@ -1,45 +1,54 @@
-#include "include/enginelib/search.h"
-#include <stdlib.h>
+#include <sys/types.h>
 #include <stdio.h>
-#include <string.h>
 
-#define INIT_QUERIES_SIZE 10
-#define INIT_QUERY_SIZE 10
+#include "containerslib/string_set.h"
 
-char*** enginelib_search_init() {
-    char ***queries = malloc(INIT_QUERIES_SIZE * sizeof(char *));
-    size_t queries_size = INIT_QUERIES_SIZE;
-    size_t queries_curr_size = 0;
+#include "enginelib/search.h"
+
+size_t enginelib_search(Index *index, /* TODO: PR data,*/ FILE *in, Search *out) {
     char *query = NULL;
     size_t query_length = 0;
+    ssize_t read;
+    if ((read = getline(&query, &query_length, in)) == -1)
+        return -1;
 
-    while(getline(&query, &query_length, stdin) != -1) {
-        if(queries_curr_size == queries_size) {
-            queries_size *= 2;
-            queries = realloc(queries, queries_size * sizeof(char *));
-        }
-        queries[queries_curr_size++] = malloc(INIT_QUERY_SIZE * sizeof(char));
+    if (query[read - 1] == '\n')
+        query[read - 1] = '\0';
 
+    utils_inplacestrtolower(query);
 
-        char *token = NULL;
-        const char *delim = " ";
-        do {
-            token = strtok(query, delim);
-            if(token != NULL && token[strlen(token) - 1] == '\n')
-                token[strlen(token) - 1] = '\0';
+    StringSet *words = stringset_init();
 
-            size_t query_curr_size = 0;
-            size_t query_size = INIT_QUERY_SIZE;
+    const char delim[] = " ";
+    char *saveptr = NULL, *token = NULL;
+    for (token = query;; token = NULL) {
+        token = strtok_r(token, delim, &saveptr);
+        if (token == NULL)
+            break;
 
-            if(token != NULL) {
-                if(query_curr_size == query_size) {
-                    query_size *= 2;
-                    queries[queries_curr_size] = realloc(queries[queries_curr_size], query_size * sizeof(char));
-                }
-                queries[queries_curr_size][query_curr_size++] = token;
-            }
-        } while(token != NULL);
+        stringset_put(words, token);
     }
 
-    return queries;
+    StringSet *pages = index_intersect_pages(index, words);
+
+    out->query = query;
+    // TODO: extract PR given pages
+    //out->heap_pr_page = heap_init();
+
+    // extract PR given pages
+
+    return heap_size(out->heap_pr_page);
+}
+
+Heap *enginelib_search_get_ranking(Search *search_result) {
+    return search_result->heap_pr_page;
+}
+
+char *enginelib_search_get_query(Search *search_result) {
+    return search_result->query;
+}
+
+void enginelib_search_clear(Search *search_result) {
+    heap_finish(search_result->heap_pr_page);
+    free(search_result->query);
 }

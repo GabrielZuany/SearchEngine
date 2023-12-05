@@ -5,9 +5,17 @@
 #define EPSILON 0.000001 // 10^-6
 
 #include "../../../containerslib/include/containerslib/forward_list.h"
+#include "../../../containerslib/include/containerslib/string_st.h"
+// #include <string_st.h>
 
-double get_page_rank(double *page_rank,  ForwardList** out_links, ForwardList** in_links, int n_pages, int page_id);
-ForwardList** google_page_ranker_read_out_links(char* graph_path);
-ForwardList* get_out_links_from_page(ForwardList** out_links, char* filename);
+
+typedef struct PageRank PageRank;
+
+PageRank* page_rank_init(int n_pages);
+void page_rank_destroy(PageRank* self);
+PageRank* page_rank_build_links(PageRank* self, char* graph_path);
+ForwardList* get_out_links_from_page(PageRank* self, char* filename);
+ForwardList* get_in_links_from_page(PageRank* self, char* filename);
+double page_rank_get(PageRank* self, int page_id);
 
 #endif
