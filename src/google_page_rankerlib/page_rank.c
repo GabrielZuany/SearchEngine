@@ -5,20 +5,6 @@
 #include <math.h>
 #include <stdbool.h>
 
-int _get_set_n_linked_pages_(int linked_pages, char mode){
-    static int n_linked_pages = 0;
-    if(mode == 's'){
-        n_linked_pages = linked_pages;
-    }
-    else if(mode == 'g'){
-        return n_linked_pages;
-    }
-    else{
-        fprintf(stderr, "Error: invalid mode %s\n", mode);
-        exit(EXIT_FAILURE);
-    }
-}
-
 ForwardList** google_page_ranker_read_out_links(char* graph_path){
     // filename number of links link1 link2 ... linkN
     // 24011.txt 7 3391.txt 12241.txt 12682.txt 6762.txt 30380.txt 17661-8.txt 22322-8.txt
@@ -38,12 +24,8 @@ ForwardList** google_page_ranker_read_out_links(char* graph_path){
     }
     rewind(graph_file);
 
-    _get_set_n_linked_pages_(n_lines, 's');
-
     ForwardList** out_links = malloc(n_lines * sizeof(ForwardList*));
-    for(int i = 0; i < n_lines; i++){
-        out_links[i] = forward_list_construct();
-    }
+    for(int i = 0; i < n_lines; i++){ out_links[i] = forward_list_construct(); }
 
     int fl_id = 0;
     char* filename = malloc(100 * sizeof(char));
@@ -54,8 +36,16 @@ ForwardList** google_page_ranker_read_out_links(char* graph_path){
         // char** links = malloc(*(n_links) * sizeof(char*));
         char links[*(n_links)][100];
 
+        // add na TST(1) o filename(doc atual) com o fl_id associado
+
         for(int i = 0; i < *(n_links); i++){
             fscanf(graph_file, "%s", links[i]);
+
+            // add na TST(2) o links[i] com o fl_id associado (NAO ATUALIZA O ID)
+            // se o cara ja estiver na TST(2), entao eu add na lista[ID] dele o filename(doc atual)
+            // se o cara nao estiver na TST(2), entao eu crio a lista[ID] dele e add o filename(doc atual)
+            // doc_out -> doc_in (doc_out tem um link para doc_in)
+
             forward_list_push_front(out_links[fl_id], links[i]);
         }
 
@@ -64,6 +54,10 @@ ForwardList** google_page_ranker_read_out_links(char* graph_path){
         fl_id++;
     }
 
+    // in_links:
+    // enquanto le os out_links, add numa tst cada cara que for lendo
+    // se o cara não estiver na TST(2) (nao tiver um valor >>ID<< associado), entao eu crio a lista, senao, eu add na lista[ID].
+
     fclose(graph_file);
     free(filename);
     free(n_links);
@@ -71,27 +65,15 @@ ForwardList** google_page_ranker_read_out_links(char* graph_path){
 }
 
 ForwardList* get_out_links_from_page(ForwardList** out_links, char* filename){
-    int n_linked_pages = _get_set_n_linked_pages_(0, 'g');
-    for(int i = 0; i < n_linked_pages; i++){
-        if(strcmp(filename, forward_list_get_head_value(out_links[i])) == 0){
-            return out_links[i];
-        }
-    }
-    return NULL;
+    // recupera o Id associado ao filename na TST
+    // retorna out_links[id]
 }
 
 ForwardList* get_in_links_from_page(ForwardList** in_links, char* filename){
-    int n_linked_pages = _get_set_n_linked_pages_(0, 'g');
-    for(int i = 0; i < n_linked_pages; i++){
-        if(strcmp(filename, forward_list_get_head_value(in_links[i])) == 0){
-            return in_links[i];
-        }
-    }
-    return NULL;
+    // recupera o Id associado ao filename na TST(2)
+    // retorna in_links[id]
 }
 
-
-// Os acessos às listas de cada cara aqui consideram que cada documento tem um id numerico associado => corrigir esse bagulho
 void __init_page_rank(double *page_rank, ForwardList** out_links, ForwardList** in_links, int n_pages, int page_id) {
     static bool already_initialized = false;
     if (already_initialized) { return; }
