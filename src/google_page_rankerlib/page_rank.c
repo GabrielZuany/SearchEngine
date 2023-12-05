@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdbool.h>
 
-ForwardList** google_page_ranker_get_out_links(char* graph_path){
+ForwardList** google_page_ranker_read_out_links(char* graph_path){
     // filename number of links link1 link2 ... linkN
     // 24011.txt 7 3391.txt 12241.txt 12682.txt 6762.txt 30380.txt 17661-8.txt 22322-8.txt
     FILE* graph_file = fopen(graph_path, "r");
@@ -50,7 +50,7 @@ ForwardList** google_page_ranker_get_out_links(char* graph_path){
     return out_links;
 }
 
-ForwardList* get_out_links(ForwardList** out_links, char* filename, int n_pages){
+ForwardList* get_out_links_from_page(ForwardList** out_links, char* filename, int n_pages){
     for(int i = 0; i < n_pages; i++){
         if(strcmp(filename, forward_list_get_head_value(out_links[i])) == 0){
             return out_links[i];

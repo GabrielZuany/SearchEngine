@@ -4,6 +4,7 @@
 #define EPSILON 0.000001 // 10^-6
 
 double get_page_rank(double *page_rank,  ForwardList** out_links, ForwardList** in_links, int n_pages, int page_id);
-ForwardList** google_page_ranker_get_out_links(char* graph_path);
+ForwardList** google_page_ranker_read_out_links(char* graph_path);
+ForwardList* get_out_links_from_page(ForwardList** out_links, char* filename, int n_pages);
 
 #endif
