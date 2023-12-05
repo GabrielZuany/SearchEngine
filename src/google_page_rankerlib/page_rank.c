@@ -6,6 +6,59 @@
 #include <math.h>
 #include <stdbool.h>
 
+ForwardList** google_page_ranker_get_out_links(char* graph_path){
+    // filename number of links link1 link2 ... linkN
+    // 24011.txt 7 3391.txt 12241.txt 12682.txt 6762.txt 30380.txt 17661-8.txt 22322-8.txt
+    FILE* graph_file = fopen(graph_path, "r");
+    if (graph_file == NULL) {
+        fprintf(stderr, "Error: could not open file %s\n", graph_path);
+        exit(EXIT_FAILURE);
+    }
+
+    int n_lines = 0;
+    char ch;
+    while(!feof(graph_file)){
+        ch = fgetc(graph_file);
+        if(ch == '\n'){
+            n_lines++;
+        }
+    }
+    rewind(graph_file);
+
+    ForwardList** out_links = malloc(n_lines * sizeof(ForwardList*));
+    for(int i = 0; i < n_lines; i++){
+        out_links[i] = forward_list_construct();
+    }
+
+    int fl_id = 0;
+    while(!feof(graph_file)) {
+        char* filename = fscanf(graph_file, "%s", filename);
+        int n_links = fscanf(graph_file, "%d", n_links);
+        char** links = malloc(n_links * sizeof(char*));
+
+        for(int i = 0; i < n_links; i++){
+            links[i] = fscanf(graph_file, "%s", links[i]);
+            forward_list_push_front(out_links[fl_id], links[i]);
+        }
+
+        forward_list_push_front(out_links[fl_id], filename); // filename is the head of the list
+
+        fl_id++;
+    }
+
+    fclose(graph_file);
+    return out_links;
+}
+
+ForwardList* get_out_links(ForwardList** out_links, char* filename, int n_pages){
+    for(int i = 0; i < n_pages; i++){
+        if(strcmp(filename, forward_list_get_head_value(out_links[i])) == 0){
+            return out_links[i];
+        }
+    }
+    return NULL;
+}
+
 double get_page_rank(double *page_rank,  ForwardList** out_links, ForwardList** in_links, int n_pages, int page_id){
     __init_page_rank(page_rank, out_links, in_links, n_pages, page_id);
     return page_rank[page_id];
