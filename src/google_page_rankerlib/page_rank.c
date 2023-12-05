@@ -80,25 +80,30 @@ ForwardList* get_out_links_from_page(ForwardList** out_links, char* filename){
     return NULL;
 }
 
+ForwardList* get_in_links_from_page(ForwardList** in_links, char* filename){
+    int n_linked_pages = _get_set_n_linked_pages_(0, "get");
+    for(int i = 0; i < n_linked_pages; i++){
+        if(strcmp(filename, forward_list_get_head_value(in_links[i])) == 0){
+            return in_links[i];
+        }
+    }
+    return NULL;
+}
 
-// Os acessos às listas de cada cara aqui consideram que cada documento tem um id numerico associado 
+
+// Os acessos às listas de cada cara aqui consideram que cada documento tem um id numerico associado => corrigir esse bagulho
 void __init_page_rank(double *page_rank, ForwardList** out_links, ForwardList** in_links, int n_pages, int page_id) {
     static bool already_initialized = false;
-    if (already_initialized) {
-        return;
-    }
+    if (already_initialized) { return; }
 
     // power method initialization
     double *page_rank_new = malloc(n_pages * sizeof(double));
-    for (int i = 0; i < n_pages; i++) {
-        page_rank_new[i] = 1.0 / n_pages;
-    }
+    for (int i = 0; i < n_pages; i++) { page_rank_new[i] = 1.0 / n_pages; }
 
     // power method update
     double delta = 0.0;
     double sum = 0.0;
     do {
-
         // Calculate page rank for each page
         for (int i = 0; i < n_pages; i++) {
             sum = 0.0;
@@ -106,22 +111,14 @@ void __init_page_rank(double *page_rank, ForwardList** out_links, ForwardList** 
             
             // SUM(j E In(i)) { page_rank[k-1](j) / |out_links(j)| }
             while (in_links_node != NULL) {
-                // usar o get_out_links_from_page para pegar a lista de out links do arquivo
-                // char* linked_page = node_get_value(in_links_node);
-                // ForwardList* out_links_node = get_out_links_from_page(out_links, linked_page);
-                // if(out_links_node == NULL){continue;}
-             
-
-
-                // int j = *(int*)node_get_value(in_links_node);
-                // if ((forward_list_size(out_links[j]) - 1) != 0) {
-                //     sum += page_rank[j] / (forward_list_size(out_links[j]) - 1);
-                // }
-                // in_links_node = forward_list_goto_next(in_links_node);
+                int page_j_E_In_i = *(int*)node_get_value(in_links_node);
+                int size = forward_list_size(out_links[page_j_E_In_i]) - 1; // -1 because the first element is the filename itself
+                if(size != 0){ sum += page_rank[page_j_E_In_i] / size; }
+                in_links_node = forward_list_goto_next(in_links_node); 
             }
 
             // page_rank[k](i) = (1 - alpha) / N + alpha * SUM(j E In(i)) { page_rank[k-1](j) / |out_links(j)| }
-            page_rank_new[i] = (1 - DAMPING_FACTOR) / n_pages + DAMPING_FACTOR * sum;
+            page_rank_new[i] = ((1 - DAMPING_FACTOR) / n_pages) + DAMPING_FACTOR * sum;
             if ((forward_list_size(out_links[i]) - 1) == 0) {
                 //page_rank_new[i] += DAMPING_FACTOR * page_rank[i] / n_pages;
                 page_rank_new[i] += DAMPING_FACTOR * page_rank[i];
@@ -131,15 +128,11 @@ void __init_page_rank(double *page_rank, ForwardList** out_links, ForwardList** 
         // power method convergence
         // delta = (1 / pages) * SUM(i) { |page_rank[k](i) - page_rank[k-1](i)| }
         delta = 0.0;
-        for (int i = 0; i < n_pages; i++) {
-            delta += fabs(page_rank_new[i] - page_rank[i]);
-        }
+        for (int i = 0; i < n_pages; i++) { delta += fabs(page_rank_new[i] - page_rank[i]); }
         delta /= n_pages;
 
         // page_rank[k-1](i) = page_rank[k](i)
-        for (int i = 0; i < n_pages; i++) {
-            page_rank[i] = page_rank_new[i];
-        }
+        for (int i = 0; i < n_pages; i++) { page_rank[i] = page_rank_new[i]; }
 
     } while (delta > EPSILON);
 
