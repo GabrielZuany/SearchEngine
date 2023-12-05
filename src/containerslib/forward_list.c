@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "containerslib/forward_list.h"
-#include "containerslib/node.h"
+#include "include/containerslib/forward_list.h"
+#include "include/containerslib/node.h"
 
 struct ForwardList
 {
@@ -95,6 +95,10 @@ void* forward_list_pop_front(ForwardList *l){
     l->size--;
 
     return val;
+}
+
+Node* forward_list_goto_next(Node* n){
+    return node_get_next(n);
 }
 
 void forward_list_remove_node(ForwardList *l, Node* n){
