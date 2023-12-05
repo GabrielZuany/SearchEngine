@@ -7,20 +7,21 @@ typedef struct node node;
 struct node {
     data_type val;
     unsigned char c;
-    TST *l, *m, *r;
+    struct node *l, *m, *r, *p;
 };
 
 struct TST {
     node* root;
 };
 
-static node* create_node() {
+static node* create_node(node *parent) {
     node* n = malloc(sizeof(*n));
     n->val = NULL;
     n->c = '\0';
     n->l = NULL;
     n->m = NULL;
     n->r = NULL;
+    n->p = parent;
     return n;
 }
 
@@ -31,19 +32,20 @@ TST* TST_init() {
 }
 
 // imagino que quebre se a string for vazia, favor nao ousar
-static node* rec_insert(node* t, char* key, data_type val) {
+static node* rec_insert(node* t, char* key, data_type val, node* parent) {
+    // TODO: checar se a logica do parent esta correta
     unsigned char c = *key;
-    if (t == NULL) { t = create_node(); t->c = c;}
-    if      (c < t->c) { t->l = rec_insert(t->l, key, val); }
-    else if (c > t->c) { t->r = rec_insert(t->r, key, val); }
+    if (t == NULL) { t = create_node(parent); t->c = c;}
+    if      (c < t->c) { t->l = rec_insert(t->l, key, val, parent); }
+    else if (c > t->c) { t->r = rec_insert(t->r, key, val, parent); }
     else if (key[1] != '\0') {
-        t->m = rec_insert(t->m, key++, val);
+        t->m = rec_insert(t->m, key++, val, t);
     } else { t->val = val; }
     return t;
 }
 
 TST* TST_insert(TST* t, char* key , data_type val) {
-    return rec_insert(t, key, val);
+    return rec_insert(t, key, val, NULL);
 }
 
 // favor nao buscar strings vazias
@@ -63,6 +65,153 @@ data_type TST_search(TST* t, char* key) {
     else            { return n->val; }
 }
 
+static void rec_free(node* t) {
+    if (t == NULL) { return; }
+    rec_free(t->l);
+    rec_free(t->m);
+    rec_free(t->r);
+    free(t);
+}
+
 void TST_free(TST* t) {
-    // TODO
+    rec_free(t->root);
+    free(t);
+}
+
+// TST ITERATOR
+
+// Definindo a estrutura do iterador
+struct TSTIterator{
+    TST *tst;
+    char *buffer;
+    node *current;
+    int index;
+};
+
+// Função auxiliar para encontrar o primeiro nó
+// enquanto procura, preenche o buffer com os caracteres
+static node *find_first(node *t, TSTIterator *iterator) {
+    if (t == NULL) {
+        return NULL;
+    }
+
+    //busca o nó mais a esquerda para começar
+    while (t->l != NULL) {
+        t = t->l;
+    }
+
+    // Se o nó atual não for NULL, adicione o caractere ao buffer
+    iterator->buffer[iterator->index++] = t->c;
+
+    // Se o valor do nó atual não for NULL, retorne o nó atual
+    if (t->val != NULL) {
+        iterator->buffer[iterator->index] = '\0';
+        return t;
+    }
+
+    // Se o nó atual não for NULL, mas o valor do nó atual for NULL, continue procurando
+    if (t->l != NULL) {
+        node *n = find_first(t->l, iterator);
+        if (n != NULL) {
+            return n;
+        }
+    }
+
+    if (t->m != NULL) {
+        node *n = find_first(t->m, iterator);
+        if (n != NULL) {
+            return n;
+        }
+    }
+
+    if (t->r != NULL) {
+        node *n = find_first(t->r, iterator);
+        if (n != NULL) {
+            return n;
+        }
+    }
+
+    // Se o nó atual não for NULL, mas o valor do nó atual for NULL, remova o caractere do buffer
+    iterator->index--;
+
+    return NULL;
+}
+
+// Função auxiliar para encontrar o próximo nó
+// enquanto procura, preenche o buffer com os caracteres
+static node *find_next(node *t, TSTIterator *iterator) {
+    // Assume que está em um nó valido e com o buffer preenchido
+
+    // Continua procurando nos nós filhos para ver se encontra um nó com valor
+    if (t->l != NULL) {
+        node *n = find_first(t->l, iterator);
+        if (n != NULL) {
+            return n;
+        }
+    }
+
+    if (t->m != NULL) {
+        node *n = find_first(t->m, iterator);
+        if (n != NULL) {
+            return n;
+        }
+    }
+
+    if (t->r != NULL) {
+        node *n = find_first(t->r, iterator);
+        if (n != NULL) {
+            return n;
+        }
+    }
+
+    // Se não encontrar, remove o caractere do buffer e começa a procurar no pai
+    // ALERTA DE INEFICIENCIA: checa o filho todo de novo
+    // ALERTA DE BUG: se o pai for NULL, vai dar segmentation fault
+    // esse ultimo foi o copilot que falou, mas eu confio nele
+    iterator->index--;
+    return find_next(t->p, iterator);
+}
+
+int TSTIterator_has_next(TSTIterator *iterator) {
+    return iterator->current != NULL;
+}
+
+key_value TSTIterator_next(TSTIterator *iterator) {
+    if (iterator->current == NULL) {
+        throw("TSTIterator: next: no more elements");
+    }
+
+    key_value kv = {iterator->buffer, iterator->current->val};
+
+    iterator->current = find_next(iterator->current, iterator);
+
+    return kv;
+}
+
+// Função auxiliar para inicializar o iterador
+TSTIterator* TST_iterator_init(TST *tst) {
+    TSTIterator *iterator = malloc(sizeof(*iterator));
+    iterator->tst = tst;
+    iterator->buffer = malloc(256); // TODO: tamanho dinamico conforme necessidade
+    iterator->index = 0;
+    iterator->current = find_first(tst->root, iterator);
+
+    return iterator;
+}
+
+// Função auxiliar para destruir o iterador
+void destroy_iterator(TSTIterator *iterator) {
+    free(iterator->buffer);
+    free(iterator);
+}
+
+void TST_traverse(TST *tst, void (*visit)(char *, data_type)) {
+    TSTIterator* iterator = TST_iterator_init(tst);
+
+    while (TSTIterator_has_next(iterator)) {
+        key_value kv = TSTIterator_next(iterator);
+        visit(kv.key, kv.val);
+    }
+
+    destroy_iterator(iterator);
 }
