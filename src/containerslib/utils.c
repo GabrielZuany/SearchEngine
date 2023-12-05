@@ -1,8 +1,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-#include "containerslib/utils.h"
+#include <string.h>
+#include "include/containerslib/utils.h"
 
 
 char *utils_pathcat(const char *path1, const char *path2) {
