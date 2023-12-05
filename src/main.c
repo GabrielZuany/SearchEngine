@@ -28,5 +28,9 @@ int main(int argc, char *argv[]) {
     char* graph_path = utils_pathcat(input_directory, "graph.txt");
     ForwardList** out_links = google_page_ranker_read_out_links(graph_path);
 
+    free(stop_words_path);
+    free(index_path);
+    free(pages_folder_path);
+
     return 0;
 }
