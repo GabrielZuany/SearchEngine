@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     Index *index = pageindexer_create(index_path, pages_folder_path, stop_words);
 
     char* graph_path = utils_pathcat(input_directory, "graph.txt");
-    ForwardList** out_links = google_page_ranker_read_out_links(graph_path);
+    ForwardList** out_links = google_page_ranker_read_links(graph_path);
 
     free(stop_words_path);
     free(index_path);

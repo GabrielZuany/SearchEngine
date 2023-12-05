@@ -7,7 +7,7 @@
 #include "../../../containerslib/include/containerslib/forward_list.h"
 
 double get_page_rank(double *page_rank,  ForwardList** out_links, ForwardList** in_links, int n_pages, int page_id);
-ForwardList** google_page_ranker_read_out_links(char* graph_path);
+ForwardList** google_page_ranker_read_links(char* graph_path);
 ForwardList* get_out_links_from_page(ForwardList** out_links, char* filename);
 
 #endif
