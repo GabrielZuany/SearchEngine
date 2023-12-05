@@ -1,6 +1,6 @@
 #include <stdlib.h>
-#include "containerslib/exceptions.h"
-#include "containerslib/tst.h"
+#include "include/containerslib/exceptions.h"
+#include "include/containerslib/tst.h"
 
 typedef struct node node;
 
@@ -192,7 +192,7 @@ int TSTIterator_has_next(TSTIterator *iterator) {
 
 key_value TSTIterator_next(TSTIterator *iterator) {
     if (iterator->current == NULL) {
-        throw("TSTIterator: next: no more elements");
+        //throw("TSTIterator: next: no more elements");
     }
 
     key_value kv = {iterator->buffer, iterator->current->val};

@@ -1,14 +1,16 @@
 #ifndef _CONTAINERSLIB_STRING_SET_H_
 #define _CONTAINERSLIB_STRING_SET_H_
 
-#include "containerslib/types.h"
+#include "types.h"
+#include "tst.h"
 
 typedef struct StringSet StringSet;
 
 StringSet *stringset_init();
 
-bool stringset_put(StringSet *self, char *key);
+bool stringset_put(StringSet *self, char *key, void *val);
 bool stringset_contains(StringSet *self, char *key);
+void* stringset_get(StringSet *self, char *key);
 void stringset_delete(StringSet *self, char *key);
 bool stringset_empty(StringSet *self);
 int stringset_size(StringSet *self);

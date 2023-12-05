@@ -1,8 +1,7 @@
 #include <string.h>
 
-#include "containerslib/tst.h"
-
-#include "containerslib/string_set.h"
+#include "include/containerslib/string_set.h"
+#include "include/containerslib/tst.h"
 
 struct StringSet {
     TST *tst;
@@ -11,14 +10,19 @@ struct StringSet {
 StringSet *stringset_init() {
     StringSet *self = malloc(sizeof(*self));
 
-    self->tst = tst_init();
+    self->tst = TST_init();
 
     return self;
 }
 
-bool stringset_put(StringSet *self, char *key) {
-    return TST_insert(self->tst, key, NULL).val == NULL;
+bool stringset_put(StringSet *self, char *key, void *val) {
+    return TST_insert(self->tst, key, val).val == NULL;
 }
+
+void* stringset_get(StringSet *self, char *key) {
+    // return the val if the key is in the table, NULL otherwise
+    return TST_search(self->tst, key);
+}  
 
 bool stringset_contains(StringSet *self, char *key) {
     return TST_search(self->tst, key) != NULL;

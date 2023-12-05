@@ -1,7 +1,8 @@
 #ifndef _CONTAINERSLIB_STRING_stringST_H_
 #define _CONTAINERSLIB_STRING_stringST_H_
 
-#include "containerslib/types.h"
+// #include "containerslib/types.h"
+#include "types.h"
 
 typedef struct StringSt StringSt;
 
