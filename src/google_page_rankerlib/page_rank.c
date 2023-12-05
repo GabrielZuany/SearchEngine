@@ -5,12 +5,12 @@
 #include <math.h>
 #include <stdbool.h>
 
-int _get_set_n_linked_pages_(int linked_pages, char* mode){
+int _get_set_n_linked_pages_(int linked_pages, char mode){
     static int n_linked_pages = 0;
-    if(strcmp(mode, "set") == 0){
+    if(mode == 's'){
         n_linked_pages = linked_pages;
     }
-    else if(strcmp(mode, "get") == 0){
+    else if(mode == 'g'){
         return n_linked_pages;
     }
     else{
@@ -38,7 +38,7 @@ ForwardList** google_page_ranker_read_out_links(char* graph_path){
     }
     rewind(graph_file);
 
-    _get_set_n_linked_pages_(n_lines, "set");
+    _get_set_n_linked_pages_(n_lines, 's');
 
     ForwardList** out_links = malloc(n_lines * sizeof(ForwardList*));
     for(int i = 0; i < n_lines; i++){
@@ -71,7 +71,7 @@ ForwardList** google_page_ranker_read_out_links(char* graph_path){
 }
 
 ForwardList* get_out_links_from_page(ForwardList** out_links, char* filename){
-    int n_linked_pages = _get_set_n_linked_pages_(0, "get");
+    int n_linked_pages = _get_set_n_linked_pages_(0, 'g');
     for(int i = 0; i < n_linked_pages; i++){
         if(strcmp(filename, forward_list_get_head_value(out_links[i])) == 0){
             return out_links[i];
@@ -81,7 +81,7 @@ ForwardList* get_out_links_from_page(ForwardList** out_links, char* filename){
 }
 
 ForwardList* get_in_links_from_page(ForwardList** in_links, char* filename){
-    int n_linked_pages = _get_set_n_linked_pages_(0, "get");
+    int n_linked_pages = _get_set_n_linked_pages_(0, 'g');
     for(int i = 0; i < n_linked_pages; i++){
         if(strcmp(filename, forward_list_get_head_value(in_links[i])) == 0){
             return in_links[i];
