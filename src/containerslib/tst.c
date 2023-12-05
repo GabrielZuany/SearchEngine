@@ -12,6 +12,7 @@ struct node {
 
 struct TST {
     node* root;
+    int size;
 };
 
 static node* create_node(node *parent) {
@@ -32,20 +33,25 @@ TST* TST_init() {
 }
 
 // imagino que quebre se a string for vazia, favor nao ousar
-static node* rec_insert(node* t, char* key, data_type val, node* parent) {
+static node* rec_insert(TST *tst, node* t, char* key, data_type val, node* parent) {
     // TODO: checar se a logica do parent esta correta
     unsigned char c = *key;
     if (t == NULL) { t = create_node(parent); t->c = c;}
-    if      (c < t->c) { t->l = rec_insert(t->l, key, val, parent); }
-    else if (c > t->c) { t->r = rec_insert(t->r, key, val, parent); }
+    if      (c < t->c) { t->l = rec_insert(tst, t->l, key, val, parent); }
+    else if (c > t->c) { t->r = rec_insert(tst, t->r, key, val, parent); }
     else if (key[1] != '\0') {
-        t->m = rec_insert(t->m, key++, val, t);
+        t->m = rec_insert(tst, t->m, key++, val, t);
+        tst->size++;
     } else { t->val = val; }
     return t;
 }
 
-TST* TST_insert(TST* t, char* key , data_type val) {
-    return rec_insert(t, key, val, NULL);
+key_value TST_insert(TST* t, char* key , data_type val) {
+    node *n = rec_insert(t, t->root, key, val, NULL);
+
+    key_value kv = {key, n->val};
+
+    return kv;
 }
 
 // favor nao buscar strings vazias
@@ -63,6 +69,14 @@ data_type TST_search(TST* t, char* key) {
     node *n = rec_search(t->root, key);
     if (n == NULL)  { return NULL; } // se for modificar o tipo de retorno, favor mudar aqui
     else            { return n->val; }
+}
+
+int TST_empty(TST* t) {
+    return t->root == NULL;
+}
+
+int TST_size(TST* t) {
+    return t->size;
 }
 
 static void rec_free(node* t) {
@@ -188,7 +202,7 @@ key_value TSTIterator_next(TSTIterator *iterator) {
     return kv;
 }
 
-// Função auxiliar para inicializar o iterador
+// inicializar o iterador
 TSTIterator* TST_iterator_init(TST *tst) {
     TSTIterator *iterator = malloc(sizeof(*iterator));
     iterator->tst = tst;
@@ -200,7 +214,7 @@ TSTIterator* TST_iterator_init(TST *tst) {
 }
 
 // Função auxiliar para destruir o iterador
-void destroy_iterator(TSTIterator *iterator) {
+void TST_iterator_free(TSTIterator *iterator) {
     free(iterator->buffer);
     free(iterator);
 }
@@ -213,5 +227,5 @@ void TST_traverse(TST *tst, void (*visit)(char *, data_type)) {
         visit(kv.key, kv.val);
     }
 
-    destroy_iterator(iterator);
+    TST_iterator_free(iterator);
 }
