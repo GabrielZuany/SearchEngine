@@ -6,6 +6,8 @@
 
 typedef struct ForwardList ForwardList;
 
+Node* forward_list_goto_next(Node *n);
+
 /**
  * @brief Construct a new Linked List:: Linked List object
  *  Allocates memory for a new linked list and returns a pointer to it.

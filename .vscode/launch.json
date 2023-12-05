@@ -28,8 +28,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/zuany/LinuxWorkEnvironmnet/SearchEngine/src",
-      "program": "/home/zuany/LinuxWorkEnvironmnet/SearchEngine/src/build/Debug/outDebug",
+      "cwd": "/home/zuany/LinuxWorkEnvironmnet/SearchEngine/src/google_page_rankerlib",
+      "program": "/home/zuany/LinuxWorkEnvironmnet/SearchEngine/src/google_page_rankerlib/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
