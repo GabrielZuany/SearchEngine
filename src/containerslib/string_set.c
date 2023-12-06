@@ -49,6 +49,6 @@ void stringset_traverse(StringSet *self, void (*visit)(char *)) {
 
 // Clean up the table memory.
 void stringset_finish(StringSet *self) {
-    TST_free(self->tst, free, free);
+    TST_free(self->tst, free);
     free(self);
 }
