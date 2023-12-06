@@ -12,11 +12,11 @@ void TST_free(TST* self, free_fn free_val);
 int TST_empty(TST* self);
 int TST_size(TST* self);
 
-typedef struct TSTIterator TSTIterator;
+typedef struct TST_iterator TST_iterator;
 
-// TSTIterator* TST_iterator_init(TST* self);
-// key_value TST_iterator_next(TSTIterator* self);
-// void TST_iterator_free(TSTIterator* self);
-// void TST_traverse(TST *tst, void (*visit)(char *, data_type));
+TST_iterator* TST_iterator_init(TST* self);
+data_type TST_iterator_next(TST_iterator *self, char **out_key);
+void TST_iterator_free(TST_iterator* self);
+void TST_traverse(TST *tst, void (*visit)(char *, data_type));
 
 #endif
