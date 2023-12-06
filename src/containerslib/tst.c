@@ -40,7 +40,7 @@ static node* rec_insert(TST *tst, node* t, char* key, data_type val, node* paren
     if      (c < t->c) { t->l = rec_insert(tst, t->l, key, val, parent); }
     else if (c > t->c) { t->r = rec_insert(tst, t->r, key, val, parent); }
     else if (key[1] != '\0') {
-        t->m = rec_insert(tst, t->m, key++, val, t);
+        t->m = rec_insert(tst, t->m, ++key, val, t);
         tst->size++;
     } else { t->val = val; }
     return t;
@@ -50,6 +50,8 @@ key_value TST_insert(TST* t, char* key , data_type val) {
     node *n = rec_insert(t, t->root, key, val, NULL);
 
     key_value kv = {key, n->val};
+
+    if (t->root == NULL) { t->root = n; }
 
     return kv;
 }
@@ -61,7 +63,7 @@ static node* rec_search(node* t, char* key) {
     if      (c < t->c) { return rec_search(t->l, key); }
     else if (c > t->c) { return rec_search(t->r, key); }
     else if (key[1] != '\0') {
-        return rec_search(t->m, key++);
+        return rec_search(t->m, ++key);
     } else { return t; }
 }
 
