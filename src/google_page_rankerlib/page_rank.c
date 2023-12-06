@@ -58,12 +58,13 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
             n_lines++;
         }
     }
+    n_lines--; // desconsidera a ultima linha vazia
     rewind(graph_file);
 
     StringSet* tst_out = stringset_init();
     StringSet* tst_in = stringset_init();
 
-    ForwardList** out_links = malloc(n_lines * sizeof(ForwardList*));
+    ForwardList** out_links = calloc(n_lines, sizeof(ForwardList*));
     ForwardList** in_links = NULL;
     for(int i = 0; i < n_lines; i++){ out_links[i] = forward_list_construct(); }
 
@@ -74,8 +75,7 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     while(!feof(graph_file)) {
         fscanf(graph_file, "%s", filename);
         fscanf(graph_file, "%d", n_links);
-        // char** links = malloc(*(n_links) * sizeof(char*));
-        char links[*(n_links)][100];
+        char** links = calloc(*(n_links) , sizeof(char*));
 
         // add na TST(1) o filename(doc atual) com o tst_out_id associado
         int* tst_out_id_ptr = malloc(sizeof(int));
@@ -83,12 +83,14 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
         stringset_put(tst_out, filename, tst_out_id_ptr);
 
         for(int i = 0; i < *(n_links); i++){
+            links[i] = calloc(sizeof(char), 20);
             fscanf(graph_file, "%s", links[i]);
 
             // add na TST(2) o links[i] com o tst_out_id associado (NAO ATUALIZA O ID)
             // se o cara ja estiver na TST(2), entao eu add na lista[ID] dele o filename(doc atual)
             // se o cara nao estiver na TST(2), entao eu crio a lista[ID] dele e add o filename(doc atual)
             // doc_out -> doc_in (doc_out tem um link para doc_in)
+            
             if (!stringset_contains(tst_in, links[i])) {
                 int* tst_in_id_ptr = malloc(sizeof(int));
                 *tst_in_id_ptr = tst_in_id;
@@ -98,8 +100,14 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
                 forward_list_push_front(in_links[tst_in_id], filename); // filename -> links[i](in_links[tst_in_id])
                 tst_in_id++;
             }
-
-            forward_list_push_front(out_links[tst_out_id], links[i]);
+            if(out_links[tst_out_id] != NULL) // links[i](out_links[tst_out_id]) -> filename
+                forward_list_push_front(out_links[tst_out_id], links[i]);
+            else{
+                out_links[tst_out_id] = forward_list_construct();
+                forward_list_push_front(out_links[tst_out_id], links[i]);
+            }
+            
+            printf(">> %s\n", links[i]);
         }
         tst_out_id++;
     }
@@ -110,8 +118,8 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     self->tst_in = tst_in;
 
     fclose(graph_file);
-    free(filename);
-    free(n_links);
+    // free(filename);
+    // free(n_links);
     
     return self;
 }
