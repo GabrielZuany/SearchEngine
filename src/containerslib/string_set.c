@@ -16,7 +16,7 @@ StringSet *stringset_init() {
 }
 
 bool stringset_put(StringSet *self, char *key, void *val) {
-    return TST_insert(self->tst, key, val).val == NULL;
+    return TST_insert(self->tst, key, val);
 }
 
 void* stringset_get(StringSet *self, char *key) {
