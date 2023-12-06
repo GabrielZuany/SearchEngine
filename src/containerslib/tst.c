@@ -41,7 +41,6 @@ static node* rec_insert(TST *tst, node* t, char* key, data_type val) {
     else if (c > t->c) { t->r = rec_insert(tst, t->r, key, val); }
     else if (key[1] != '\0') {
         t->m = rec_insert(tst, t->m, ++key, val);
-        tst->size++;
     } else { t->val = val; }
     return t;
 }
@@ -52,6 +51,8 @@ bool TST_insert(TST* t, char* key , data_type val) {
     if (t->root == NULL) {
         t->root = n;
     }
+
+    t->size++;
 
     return n != NULL;
 }
@@ -140,7 +141,7 @@ static node *rec_find_first(node *n, TST_iterator *iterator){
     }
 
     // Se a pilha estiver vazia, retorna NULL
-    if (forward_list_empty(iterator->stack)) {
+    if (forward_list_is_empty(iterator->stack)) {
         return NULL;
     }
 
@@ -154,7 +155,7 @@ static node *find_first(node *t, TST_iterator *iterator) {
     // Reinicia o buffer e a pilha
     iterator->index = 0;
     forward_list_destroy(iterator->stack);
-    iterator->stack = forward_list_init();
+    iterator->stack = forward_list_construct();
 
     // Começa a procurar
     return rec_find_first(t, iterator);
@@ -175,7 +176,7 @@ static node *find_next(node *t, TST_iterator *iterator) {
     }
 
     // Se a pilha estiver vazia, retorna NULL
-    if (forward_list_empty(iterator->stack)) {
+    if (forward_list_is_empty(iterator->stack)) {
         return NULL;
     }
 
@@ -194,7 +195,7 @@ data_type TST_iterator_next(TST_iterator *iterator, char **out_key) {
         //throw("TSTIterator: next: no more elements");
     }
 
-    out_key = iterator->buffer;
+    *out_key = iterator->buffer;
     data_type *out_val = iterator->current->val;
 
     iterator->current = find_next(iterator->current, iterator);
@@ -208,7 +209,7 @@ TST_iterator* TST_iterator_init(TST *tst) {
     iterator->tst = tst;
     iterator->buffer = malloc(256); // TODO: tamanho dinamico conforme necessidade
     iterator->index = 0;
-    iterator->current = find_first(tst, iterator);
+    iterator->current = find_first(tst->root, iterator);
 
     return iterator;
 }
@@ -221,9 +222,9 @@ void TST_iterator_free(TST_iterator *iterator) {
 
 void TST_traverse(TST *tst, void (*visit)(char *, data_type)) {
     TST_iterator *iterator = TST_iterator_init(tst);
-    while (TSTIterator_has_next(iterator)) {
+    while (TST_iterator_has_next(iterator)) {
         char *key;
-        data_type val = TSTIterator_next(iterator, &key);
+        data_type val = TST_iterator_next(iterator, &key);
         visit(key, val);
     }
     TST_iterator_free(iterator);
