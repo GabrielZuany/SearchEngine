@@ -1,8 +1,8 @@
 #include <stdlib.h>
-#include "include/containerslib/exceptions.h"
-#include "include/containerslib/tst.h"
-#include "include/containerslib/types.h"
-#include "include/containerslib/forward_list.h"
+#include "containerslib/exceptions.h"
+#include "containerslib/tst.h"
+#include "containerslib/types.h"
+#include "containerslib/forward_list.h"
 
 typedef struct node node;
 

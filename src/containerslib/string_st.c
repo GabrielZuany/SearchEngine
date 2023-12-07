@@ -1,8 +1,8 @@
 #include <string.h>
 
-#include "include/containerslib/tst.h"
-#include "include/containerslib/string_st.h"
-#include "include/containerslib/exceptions.h"
+#include "containerslib/tst.h"
+#include "containerslib/string_st.h"
+#include "containerslib/exceptions.h"
 
 struct StringSt {
     TST *tst;

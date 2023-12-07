@@ -4,8 +4,8 @@
 #define DAMPING_FACTOR 0.85
 #define EPSILON 0.000001 // 10^-6
 
-#include "../../../containerslib/include/containerslib/forward_list.h"
-#include "../../../containerslib/include/containerslib/string_st.h"
+#include "containerslib/forward_list.h"
+#include "containerslib/string_st.h"
 
 
 typedef struct PageRank PageRank;

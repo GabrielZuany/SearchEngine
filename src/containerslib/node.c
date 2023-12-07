@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "include/containerslib/node.h"
+#include "containerslib/node.h"
 
 struct Node
 {

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "include/google_page_rankerlib/page_rank.h"
+#include "google_page_rankerlib/page_rank.h"
 #include <math.h>
 #include <stdbool.h>
 
