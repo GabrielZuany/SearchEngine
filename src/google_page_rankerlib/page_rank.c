@@ -68,8 +68,8 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     StringSt* tst_in = stringst_init();
 
     ForwardList** out_links = calloc(n_lines + 2, sizeof(ForwardList*));
-    ForwardList** in_links = NULL;
-    for(int i = 0; i < n_lines + 2 ; i++){ out_links[i] = forward_list_construct(); }
+    ForwardList** in_links = NULL; 
+    for(int i = 0; i < n_lines + 2; i++){ out_links[i] = forward_list_construct(); }
 
     int tst_out_id = 0;
     int tst_in_id = 0;
@@ -80,11 +80,12 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
         if (fscanf(graph_file, "%d", n_links)) {};
         char** links = calloc(*(n_links) , sizeof(char*));
 
-        // add na TST(1) o filename(doc atual) com o tst_out_id associado
+        // add na TST(out) o filename(doc atual) com o tst_out_id associado
         int* tst_out_id_ptr = malloc(sizeof(int));
         *tst_out_id_ptr = tst_out_id;
         stringst_put(tst_out, filename, tst_out_id_ptr);
 
+        // add na TST(in) os links com o tst_in_id associado
         for(int i = 0; i < *(n_links); i++){
             links[i] = calloc(sizeof(char), 20);
             if (fscanf(graph_file, "%s", links[i])) {};
@@ -102,13 +103,14 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
                 forward_list_push_front(in_links[*tst_in_id_ptr], filename); // filename -> links[i](in_links[tst_in_id])
             }
 
+            fscanf(graph_file, "%s", links[i]);
             if(out_links[tst_out_id] != NULL) // links[i](out_links[tst_out_id]) -> filename
                 forward_list_push_front(out_links[tst_out_id], links[i]);
             else{
                 out_links[tst_out_id] = forward_list_construct();
                 forward_list_push_front(out_links[tst_out_id], links[i]);
             }
-            
+                        
         }
         tst_out_id++;
     }
@@ -128,6 +130,11 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     ForwardList* out_links_from_page = get_out_links_from_page(self, key);
     printf("out_links_from_page %s: ", key);
     forward_list_print(out_links_from_page, (void (*)(void *))print_string);
+    forward_list_print(out_links_from_page, print_string);
+
+    // ForwardList* in_links_from_page = get_in_links_from_page(self, key);
+    // printf("in_links_from_page %s: ", key);
+    // forward_list_print(in_links_from_page, print_string);
     
     return self;
 }
