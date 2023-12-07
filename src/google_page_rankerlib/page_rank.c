@@ -45,8 +45,8 @@ void page_rank_finish(PageRank* self){
     free(self);
 }
 
-void print_string(char* str){
-    printf("%s", str);
+void print_string(void* str){
+    printf("%s", (char*)str);
 }
 PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     // filename number of links link1 link2 ... linkN
@@ -102,24 +102,19 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
                 forward_list_push_front(out_links[tst_out_id], links[i]);
             }
 
-            // add na TST(in) o links[i] com o tst_in_id associado
-            // erro: está dando um replace quando cria um novo id.
-            /*
-            id: 5
-            out_links_from_page 12241.txt: [19848-8.txt, 17661-8.txt, 30380.txt, 6762.txt, 305.txt, 25911-8.txt, 3391.txt]
-            in_links_from_page 12241.txt: [27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt, 27603-8.txt]page_rank_value: 0.15000000
-            */
+            // add na TST(in) o links[i] com o tst_in_id associado            
+           char* new_doc = strdup(filename);
             if(!stringst_contains(tst_in, links[i])){
                 int* tst_in_id_ptr = malloc(sizeof(int));
                 *tst_in_id_ptr = tst_in_id;
                 stringst_put(tst_in, links[i], tst_in_id_ptr);
                 in_links = realloc(in_links, (tst_in_id + 1) * sizeof(ForwardList*));
                 in_links[tst_in_id] = forward_list_construct();
-                forward_list_push_front(in_links[tst_in_id], filename);
+                forward_list_push_front(in_links[tst_in_id], new_doc);
                 tst_in_id++;
             }else{
                 int* tst_in_id_ptr = (int*)stringst_get(tst_in, links[i]);
-                forward_list_push_front(in_links[*tst_in_id_ptr], filename);
+                forward_list_push_front(in_links[*tst_in_id_ptr], new_doc);
             }
         }
         tst_out_id++;
@@ -132,15 +127,16 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
 
     // fclose(graph_file);
 
-    char* key = "12241.txt";
-    int* id = (int*)stringst_get(self->tst_out, key);
+    char* key_in = "3391.txt";
+    char* key_out = "24011.txt";
+    int* id = (int*)stringst_get(self->tst_out, key_out);
     printf("id: %d\n", *id);
-    ForwardList* out_links_from_page = get_out_links_from_page(self, key);
-    printf("out_links_from_page %s: ", key);
+    ForwardList* out_links_from_page = get_out_links_from_page(self, key_out);
+    printf("out_links_from_page %s: ", key_out);
     forward_list_print(out_links_from_page, print_string);
 
-    ForwardList* in_links_from_page = get_in_links_from_page(self, key);
-    printf("\nin_links_from_page %s: ", key);
+    ForwardList* in_links_from_page = get_in_links_from_page(self, key_in);
+    printf("\nin_links_from_page %s: ", key_in);
     forward_list_print(in_links_from_page, print_string);
     
     return self;
@@ -201,7 +197,9 @@ void __init_page_rank(PageRank* self) {
         delta /= self->n_pages;
 
         // page_rank[k-1](i) = page_rank[k](i)
-        for (int i = 0; i < self->n_pages; i++) { self->page_rank[i] = page_rank_new[i]; }
+        for (int i = 0; i < self->n_pages; i++) { 
+            self->page_rank[i] = page_rank_new[i]; 
+        }
 
     } while (delta > EPSILON);
 
