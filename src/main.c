@@ -29,12 +29,10 @@ int main(int argc, char *argv[]) {
     StringSet *stop_words = pageindexer_read_stop_words(stop_words_path);
     Index *index = pageindexer_create(index_path, pages_folder_path, stop_words);
 
-    char* graph_path = utils_pathcat(input_directory, "graph.txt");
     int n_pages = 0;
     PageRank* page_rank = page_rank_init(n_pages);
     page_rank_build_links(page_rank, graph_path);
     double page_rank_value = page_rank_get(page_rank, 0);
-
 
     engine_run(index, /* TODO: PR data,*/ stdin, stdout);
 
