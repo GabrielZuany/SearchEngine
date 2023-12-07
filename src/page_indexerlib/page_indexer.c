@@ -7,15 +7,21 @@
 #include "containerslib/string_st.h"
 #include "containerslib/exceptions.h"
 #include "containerslib/utils.h"
+#include "containerslib/set.h"
 
 #include "page_indexerlib/index.h"
 #include "page_indexerlib/page_indexer.h"
 
-static inline void __pageindexer_index_page_line(char *line, StringSet *stop_words, StringSt *word_pages_map, const char *page_name);
-static inline void __pageindexer_index_page(const char *page_name, const char *pages_folder_path, StringSet *stop_words, StringSt *word_pages_map);
+static inline void __pageindexer_index_page_line(char *line, StringSet *stop_words, StringSt *word_idspageset_map, size_t page_id);
+static inline void __pageindexer_index_page(char *page_name, size_t page_id, const char *pages_folder_path, StringSet *stop_words, StringSt *word_idspageset_map);
 
 Index *pageindexer_create(const char *index_path, const char *pages_folder_path, StringSet *stop_words) {
-    StringSt *word_pages_map = stringst_init(); // StringSt<string, StringSet<string>>
+    StringSt *word_idspageset_map = stringst_init(); // St<string, Set<int>>
+    StringSt *page_idpage_map = stringst_init(); // St<string, int>
+
+    size_t len = 0;
+    size_t size = 4;
+    char **idpage_page_map = malloc(__SIZEOF_POINTER__ * size);
 
     // iterate over all lines in index
     FILE *index_file = fopen(index_path, "r");
@@ -26,18 +32,24 @@ Index *pageindexer_create(const char *index_path, const char *pages_folder_path,
     size_t page_name_length = 0;
     ssize_t read;
     while ((read = getline(&page_name, &page_name_length, index_file)) != -1) {
-        if (page_name[page_name_length - 1] == '\n')
-            page_name[page_name_length - 1] = '\0';
+        if (page_name[read - 1] == '\n')
+            page_name[read - 1] = '\0';
 
-        __pageindexer_index_page(page_name, pages_folder_path, stop_words, word_pages_map);
+        char *strdup_page_name = strdup(page_name);
+        if (len == size) {
+            size <<= 1;
+            idpage_page_map = realloc(idpage_page_map, __SIZEOF_POINTER__ * size);
+        }
+        idpage_page_map[len++] = strdup_page_name;
+        stringst_put(page_idpage_map, strdup_page_name, (size_t *)len);
+
+        __pageindexer_index_page(strdup_page_name, len, pages_folder_path, stop_words, word_idspageset_map);
     }
 
     free(page_name);
     fclose(index_file);
 
-    // TODO
-    exception_throw_failure("pageindexer_create - Not implemented");
-    Index *index = index_init(word_pages_map, NULL, NULL, stop_words);
+    Index *index = index_init(word_idspageset_map, page_idpage_map, idpage_page_map, len, size, stop_words);
 
     return index;
 }
@@ -67,7 +79,7 @@ StringSet *pageindexer_read_stop_words(const char *stop_words_path) {
     return stop_words;
 }
 
-static inline void __pageindexer_index_page(const char *page_name, const char *pages_folder_path, StringSet *stop_words, StringSt *word_pages_map) {
+static inline void __pageindexer_index_page(char *page_name, size_t page_id, const char *pages_folder_path, StringSet *stop_words, StringSt *word_idspageset_map) {
     char *page_path = utils_pathcat(pages_folder_path, page_name);
 
     FILE *page_file = fopen(page_path, "r");
@@ -85,14 +97,18 @@ static inline void __pageindexer_index_page(const char *page_name, const char *p
 
         utils_inplacestrtolower(line);
 
-        __pageindexer_index_page_line(line, stop_words, word_pages_map, page_name);
+        __pageindexer_index_page_line(line, stop_words, word_idspageset_map, page_id);
     }
 
     free(line);
     fclose(page_file);
 }
 
-static inline void __pageindexer_index_page_line(char *line, StringSet *stop_words, StringSt *word_pages_map, const char *page_name) {
+int __pageindexer_pageidsset_cmp(const size_t *a, const size_t *b) {
+    return (size_t)a - (size_t)b;
+}
+
+static inline void __pageindexer_index_page_line(char *line, StringSet *stop_words, StringSt *word_idspageset_map, size_t page_id) {
     const char delim[] = " \t\n";
 
     char *saveptr = NULL, *token = NULL;
@@ -105,12 +121,12 @@ static inline void __pageindexer_index_page_line(char *line, StringSet *stop_wor
         if (stringset_contains(stop_words, word))
             continue;
 
-        StringSet *pages = stringst_get(word_pages_map, word);
+        Set *pages = stringst_get(word_idspageset_map, word);
         if (pages == NULL) {
-            pages = stringset_init();
-            stringst_put(word_pages_map, word, pages);
+            pages = set_init((cmp_fn)__pageindexer_pageidsset_cmp);
+            stringst_put(word_idspageset_map, word, pages);
         }
 
-        stringset_put(pages, page_name);
+        set_put(pages, (size_t *)page_id);
     }
 }

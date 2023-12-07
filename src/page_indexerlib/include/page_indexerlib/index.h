@@ -6,9 +6,11 @@
 
 typedef struct Index Index;
 
-Index *index_init(StringSt *word_idspageset_map, StringSt *page_idpage_map, StringSt *idpage_page_map, StringSet *ref_stop_words);
+Index *index_init(StringSt *word_idspageset_map, StringSt *page_idpage_map, char **idpage_page_map, size_t len, size_t size, StringSet *ref_stop_words);
 
 StringSet *index_get_ref_stop_words(Index *index);
+
+size_t index_get_num_pages(Index *index);
 
 StringSet *index_intersect_pages(Index *index, StringSet *words);
 

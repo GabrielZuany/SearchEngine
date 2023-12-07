@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     char* graph_path = utils_pathcat(input_directory, "graph.txt");
     char *index_path = utils_pathcat(input_directory, "index.txt");
     char *pages_folder_path = utils_pathcat(input_directory, "pages/");
-    char *stop_words_path = utils_pathcat(input_directory, "stop_words.txt");
+    char *stop_words_path = utils_pathcat(input_directory, "stopwords.txt");
 
     StringSet *stop_words = pageindexer_read_stop_words(stop_words_path);
     Index *index = pageindexer_create(index_path, pages_folder_path, stop_words);
