@@ -32,8 +32,8 @@ Index *pageindexer_create(const char *index_path, const char *pages_folder_path,
     size_t page_name_length = 0;
     ssize_t read;
     while ((read = getline(&page_name, &page_name_length, index_file)) != -1) {
-        if (page_name[page_name_length - 1] == '\n')
-            page_name[page_name_length - 1] = '\0';
+        if (page_name[read - 1] == '\n')
+            page_name[read - 1] = '\0';
 
         char *strdup_page_name = strdup(page_name);
         if (len == size) {

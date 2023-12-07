@@ -79,13 +79,6 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
     size_t page_count = 0;
     size_t num_words = heap_len(heap);
     while (heap_len(heap) > 0) {
-        if (page_count == num_words) {
-            page_count = 0;
-            page_id = 0;
-
-            stringset_put(pages, __index_get_page_from_pageid(index, page_id));
-        }
-
         SetIterator *curr_iter;
         size_t curr_page_id = heap_pop(heap, &curr_iter);
         if (page_id != curr_page_id) {
@@ -93,6 +86,13 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
             page_count = 1;
         } else {
             page_count++;
+        }
+
+        if (page_count == num_words) {
+            page_count = 0;
+            page_id = 0;
+
+            stringset_put(pages, __index_get_page_from_pageid(index, page_id));
         }
 
         if (set_iterator_has_next(curr_iter))
