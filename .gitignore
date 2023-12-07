@@ -20,3 +20,5 @@ valgrind-out.txt
 
 .vscode/settings.json
 teste_page_rank
+compile_commands.json
+.cache/
