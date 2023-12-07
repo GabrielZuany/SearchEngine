@@ -2,34 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run debug",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/src/build/debug/main",
-      "args": ["exemplos/exemplo/"],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/",
-      "environment": [],
-      "externalConsole": false,
-      "MIMode": "gdb",
-      "setupCommands": [
-        {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
-        }
-      ],
-      "preLaunchTask": "build debug"
-    },
-    {
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/zuany/LinuxWorkEnvironmnet/SearchEngine/src/google_page_rankerlib",
-      "program": "/home/zuany/LinuxWorkEnvironmnet/SearchEngine/src/google_page_rankerlib/build/Debug/outDebug",
+      "cwd": "/home/zuany/LinuxWorkEnvironmnet/SearchEngine/src",
+      "program": "/home/zuany/LinuxWorkEnvironmnet/SearchEngine/src/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

@@ -78,6 +78,9 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
 
     int tst_out_id = 0;
     int tst_in_id = 0;
+    int* tst_in_id_ptr = NULL;
+    int* tst_out_id_ptr = NULL;
+
     char* filename = malloc(100 * sizeof(char));
     int* n_links = malloc(sizeof(int));
     char** links = NULL;
@@ -87,7 +90,7 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
         links = calloc(*(n_links) , sizeof(char*));
 
         // add na TST(out) o filename(doc atual) com o tst_out_id associado
-        int* tst_out_id_ptr = malloc(sizeof(int));
+        tst_out_id_ptr = malloc(sizeof(int));
         *tst_out_id_ptr = tst_out_id;
         stringst_put(tst_out, filename, tst_out_id_ptr);
 
@@ -106,11 +109,9 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
             // add na TST(in) o links[i] com o tst_in_id associado            
            char* new_doc = strdup(filename);
             if(!stringst_contains(tst_in, links[i])){
-                int* tst_in_id_ptr = malloc(sizeof(int));
+                tst_in_id_ptr = malloc(sizeof(int));
                 *tst_in_id_ptr = tst_in_id;
                 stringst_put(tst_in, links[i], tst_in_id_ptr);
-                // in_links = realloc(in_links, (tst_in_id + 1) * sizeof(ForwardList*));
-                // in_links[tst_in_id] = forward_list_construct();
                 forward_list_push_front(in_links[tst_in_id], new_doc);
                 tst_in_id++;
             }else{
@@ -119,6 +120,7 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
             }
         }
         tst_out_id++;
+        free(links);
     }
     
     self->out_links = out_links;
@@ -126,19 +128,9 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     self->tst_out = tst_out;
     self->tst_in = tst_in;
 
-    // fclose(graph_file);
-
-    // char* key_in = "3391.txt";
-    // char* key_out = "24011.txt";
-    // int* id = (int*)stringst_get(self->tst_out, key_out);
-    // printf("id: %d\n", *id);
-    // ForwardList* out_links_from_page = get_out_links_from_page(self, key_out);
-    // printf("out_links_from_page %s: ", key_out);
-    // forward_list_print(out_links_from_page, print_string);
-
-    // ForwardList* in_links_from_page = get_in_links_from_page(self, key_in);
-    // printf("\nin_links_from_page %s: ", key_in);
-    // forward_list_print(in_links_from_page, print_string);
+    fclose(graph_file);
+    free(filename);
+    free(n_links);
     
     return self;
 }
@@ -163,7 +155,6 @@ void __init_page_rank(PageRank* self) {
 
     // power method initialization
     double *page_rank_k_1 = malloc(self->n_pages * sizeof(double));
-    // for (int i = 0; i < self->n_pages; i++) { page_rank_k_1[i] = 1.0 / (double)self->n_pages; }
 
     // power method update
     ForwardList** in_links = self->in_links;
@@ -214,19 +205,14 @@ void __init_page_rank(PageRank* self) {
         // printf("delta_k: %.8f\n", delta_k);
         if(delta_k < EPSLON){break;}        
     }while(true);
-    
-    free(page_rank_k_1);
-    already_initialized = true;
-    
+        
     for(int i=0; i< self->n_pages; i++){
-        // Node* in_links_node = forward_list_get_head_node(in_links[i]);
-        // char* document = (char*)node_get_value(in_links_node);
-        // int j = *(int*)stringst_get(self->tst_out, document); // get list id of document j
-
-        printf("page_rank[%d]: %.8f\n", i, self->page_rank[i]);
-        // printf("%s : %.8f\n", document, self->page_rank[j]);
+        printf("[%d]: %.8f\n",i, self->page_rank[i]);
     }
     // [0.03, 0.09541360, 0.74067280, 0.06695680, 0.06695680] 
+
+    free(page_rank_k_1);
+    already_initialized = true;
 }
 
 double page_rank_get(PageRank* self, char* page){
