@@ -1,5 +1,7 @@
 #include "containerslib/string_set.h"
 #include "containerslib/string_st.h"
+#include "containerslib/heap.h"
+#include "containerslib/exceptions.h"
 
 #include "page_indexerlib/index.h"
 
@@ -15,7 +17,7 @@ Index *index_init(StringSt *word_idspageset_map, StringSt *page_idpage_map, Stri
 {
     Index *index = malloc(sizeof(Index));
     if (index == NULL)
-        exception_throw_memory_failure("index_init - Failed to allocate memory for index");
+        exception_throw_oom("index_init - Failed to allocate memory for index");
 
     index->word_idspageset_map = word_idspageset_map;
     index->page_idpage_map = page_idpage_map;
@@ -30,21 +32,34 @@ StringSet *index_get_ref_stop_words(Index *index) {
 }
 
 StringSet *index_intersect_pages(Index *index, StringSet *words) {
+    exception_throw_failure("index_intersect_pages - Not implemented");
+
     StringSet *pages = stringset_init();
 
-    // make the supla clever heap-enabled parallel intersection
-    
+    // TODO: implementar
+    if (index) {}; // warning suppression hihiih
+
+    // giovanni estou usando uma funcao do fun with bits esta orgulhoso?
+    Heap *heap = heap_init(MIN_HEAP, __builtin_clz(stringset_size(words)), sizeof(int), NULL);
+    //                     ^^^^^^^^
+    //                    stolen https://stackoverflow.com/a/3272516
+
+    //TST_iterator *iterator = 
+
+    if (heap) {}; // warning suppression hihiih
 
     return pages;
 }
 
 static void __index_finish_stringset(char *key, void *value)
 {
+    if (key) {}; // warning suppression hihiih
     stringset_finish(value);
 }
 
 static void __index_finish_stringst(char *key, void *value)
 {
+    if (value) {}; // warning suppression hihiih
     free(key);
 }
 

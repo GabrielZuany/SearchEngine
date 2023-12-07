@@ -76,8 +76,8 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     char* filename = malloc(100 * sizeof(char));
     int* n_links = malloc(sizeof(int));
     while(!feof(graph_file)) {
-        fscanf(graph_file, "%s", filename);        
-        fscanf(graph_file, "%d", n_links);
+        if (fscanf(graph_file, "%s", filename)) {};
+        if (fscanf(graph_file, "%d", n_links)) {};
         char** links = calloc(*(n_links) , sizeof(char*));
 
         // add na TST(1) o filename(doc atual) com o tst_out_id associado
@@ -87,7 +87,7 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
 
         for(int i = 0; i < *(n_links); i++){
             links[i] = calloc(sizeof(char), 20);
-            fscanf(graph_file, "%s", links[i]);
+            if (fscanf(graph_file, "%s", links[i])) {};
             
             if (!stringst_contains(tst_in, links[i])) {
                 int* tst_in_id_ptr = malloc(sizeof(int));
@@ -127,7 +127,7 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     printf("id: %d\n", *id);
     ForwardList* out_links_from_page = get_out_links_from_page(self, key);
     printf("out_links_from_page %s: ", key);
-    forward_list_print(out_links_from_page, print_string);
+    forward_list_print(out_links_from_page, (void (*)(void *))print_string);
     
     return self;
 }

@@ -23,10 +23,6 @@ Node *node_get_next(Node *n){
     return n->next;
 }
 
-void *node_set_next(Node *n, Node *next){
-    n->next = next;
-}
-
 void node_destroy(Node *n){
     free(n);
 }

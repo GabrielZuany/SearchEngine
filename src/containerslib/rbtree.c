@@ -98,7 +98,7 @@ static struct _RbNode *__rbtree_put_node(struct _RbNode *node, void *key, void *
 
     // Balance 4-node.
     if (__rbtree_node_is_red(node->left) && __rbtree_node_is_red(node->left->left))
-        node = rotate_rignodet(node);
+        node = __rbtree_node_rotate_right(node);
 
     // Split 4-node.
     if (__rbtree_node_is_red(node->left) && __rbtree_node_is_red(node->right))
@@ -142,7 +142,11 @@ bool rbtree_contains(RbTree *self, void *key) {
 }
 
 void *rbtree_delete(RbTree *self, void *key, void **out_key) {
+    if (self) {}; // warning suppression hihiih
+    if (key) {}; // warning suppression hihiih
+    if (out_key) {}; // warning suppression hihiih
     exception_throw_failure("rbtree_delete - Not implemented yet.");
+    return NULL;
 }
 
 bool rbtree_empty(RbTree *self) {
@@ -229,14 +233,22 @@ void *rbtree_delmin(RbTree *self, void **out_key) {
     if (rbtree_empty(self))
         exception_throw_failure("rbtree_delmin - Empty tree.");
 
+    if (out_key) {}; // warning suppression hihiih
+
     exception_throw_failure("rbtree_delmin - Not implemented yet.");
+
+    return NULL;
 }
 
 void *rbtree_delmax(RbTree *self, void **out_key) {
     if (rbtree_empty(self))
         exception_throw_failure("rbtree_delmax - Empty tree.");
 
+    if (out_key) {}; // warning suppression hihiih
+
     exception_throw_failure("rbtree_delmax - Not implemented yet.");
+
+    return NULL;
 }
 
 static void __rbtree_traverse_node(struct _RbNode *node, void (*visit)(void *,  void *)) {

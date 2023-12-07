@@ -36,6 +36,7 @@ Index *pageindexer_create(const char *index_path, const char *pages_folder_path,
     fclose(index_file);
 
     // TODO
+    exception_throw_failure("pageindexer_create - Not implemented");
     Index *index = index_init(word_pages_map, NULL, NULL, stop_words);
 
     return index;
@@ -67,8 +68,6 @@ StringSet *pageindexer_read_stop_words(const char *stop_words_path) {
 }
 
 static inline void __pageindexer_index_page(const char *page_name, const char *pages_folder_path, StringSet *stop_words, StringSt *word_pages_map) {
-    const char delim[] = " \t\n";
-    
     char *page_path = utils_pathcat(pages_folder_path, page_name);
 
     FILE *page_file = fopen(page_path, "r");
@@ -103,6 +102,8 @@ static inline void __pageindexer_index_page_line(char *line, StringSet *stop_wor
             break;
 
         char *word = token;
+        if (stringset_contains(stop_words, word))
+            continue;
 
         StringSet *pages = stringst_get(word_pages_map, word);
         if (pages == NULL) {

@@ -15,8 +15,8 @@ LIBGOOGLEPAGERANKER          = google_page_ranker
 LIBGOOGLEPAGERANKERDIRRELEASE = $(LIBGOOGLEPAGERANKERDIR)/build/release
 LIBGOOGLEPAGERANKERDIRDEBUG   = $(LIBGOOGLEPAGERANKERDIR)/build/debug
 
-LIBENGINEDIR       = google_page_rankerlib
-LIBENGINE          = google_page_ranker
+LIBENGINEDIR       = enginelib
+LIBENGINE          = engine
 LIBENGINEDIRRELEASE = $(LIBENGINEDIR)/build/release
 LIBENGINEDIRDEBUG   = $(LIBENGINEDIR)/build/debug
 

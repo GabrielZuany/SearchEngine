@@ -34,6 +34,9 @@ int main(int argc, char *argv[]) {
     page_rank_build_links(page_rank, graph_path);
     double page_rank_value = page_rank_get(page_rank, 0);
 
+    // TODO remove
+    if (page_rank_value) {}; // warning suppression hihiih
+
     engine_run(index, /* TODO: PR data,*/ stdin, stdout);
 
     free(graph_path);

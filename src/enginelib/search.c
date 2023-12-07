@@ -1,11 +1,15 @@
 #include <sys/types.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "containerslib/string_set.h"
+#include "containerslib/utils.h"
+#include "containerslib/heap.h"
 
 #include "enginelib/search.h"
 
-size_t enginelib_search(Index *index, /* TODO: PR data,*/ FILE *in, Search *out) {
+long long int enginelib_search(Index *index, /* TODO: PR data,*/ FILE *in, Search *out) {
     char *query = NULL;
     size_t query_length = 0;
     ssize_t read;
@@ -36,8 +40,9 @@ size_t enginelib_search(Index *index, /* TODO: PR data,*/ FILE *in, Search *out)
     //out->heap_pr_page = heap_init();
 
     // extract PR given pages
+    if (pages) {}; //TODO
 
-    return heap_size(out->heap_pr_page);
+    return (long long int)heap_len(out->heap_pr_page);
 }
 
 Heap *enginelib_search_get_ranking(Search *search_result) {
@@ -49,6 +54,6 @@ char *enginelib_search_get_query(Search *search_result) {
 }
 
 void enginelib_search_clear(Search *search_result) {
-    heap_finish(search_result->heap_pr_page);
+    heap_free(search_result->heap_pr_page);
     free(search_result->query);
 }

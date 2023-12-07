@@ -34,8 +34,8 @@ TST* TST_init() {
 }
 
 // imagino que quebre se a string for vazia, favor nao ousar
-static node* rec_put(TST *tst, node* t, char* key, data_type val, data_type *out_val) {
-    unsigned char c = *key;
+static node* rec_put(TST *tst, node* t, const char* key, data_type val, data_type *out_val) {
+    const unsigned char c = *key;
     if (t == NULL) { t = create_node(); t->c = c;}
     if      (c < t->c) { t->l = rec_put(tst, t->l, key, val, out_val); }
     else if (c > t->c) { t->r = rec_put(tst, t->r, key, val, out_val); }
@@ -49,7 +49,7 @@ static node* rec_put(TST *tst, node* t, char* key, data_type val, data_type *out
     return t;
 }
 
-data_type TST_put(TST* t, char* key , data_type val) {
+data_type TST_put(TST* t, const char* key , data_type val) {
     data_type out_val;
     node *n = rec_put(t, t->root, key, val, &out_val);
 
@@ -190,7 +190,7 @@ static node *find_next(node *t, TST_iterator *iterator) {
     return find_next(next, iterator);
 }
 
-int TST_iterator_has_next(TST_iterator *iterator) {
+bool TST_iterator_has_next(TST_iterator *iterator) {
     return iterator->current != NULL;
 }
 

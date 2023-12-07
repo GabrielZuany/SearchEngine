@@ -34,6 +34,13 @@ char *stringst_ceiling(StringSt *self, char *key);
 void *stringst_delmin(StringSt *self, char **out_key);
 // Delete largest key.
 void *stringst_delmax(StringSt *self, char **out_key);
+
+typedef struct StringStIterator StringStIterator;
+
+StringStIterator *stringst_iterator_init(StringSt* self);
+bool stringst_iterator_has_next(StringStIterator *iterator);
+void *stringst_iterator_next(StringStIterator *self, char **out_key);
+void stringst_iterator_finish(StringStIterator* self);
 // Visit all the key-value pairs in the order of their keys.
 void stringst_traverse(StringSt *self, void (*visit)(char *,  void *));
 

@@ -1,8 +1,8 @@
 #include <string.h>
 
 #include "include/containerslib/tst.h"
-
 #include "include/containerslib/string_st.h"
+#include "include/containerslib/exceptions.h"
 
 struct StringSt {
     TST *tst;
@@ -85,9 +85,34 @@ bool stringst_empty(StringSt *self) {
 /*     return val; */
 /* } */
 
+struct StringStIterator {
+    TST_iterator *iterator;
+};
+
+StringStIterator *stringst_iterator_init(StringSt* self) {
+    StringStIterator *iterator = malloc(sizeof(*iterator));
+    iterator->iterator = TST_iterator_init(self->tst);
+    return iterator;
+}
+
+bool stringst_iterator_has_next(StringStIterator *iterator) {
+    return TST_iterator_has_next(iterator->iterator);
+}
+
+void *stringst_iterator_next(StringStIterator *self, char **out_key) {
+    return TST_iterator_next(self->iterator, out_key);
+}
+
+void stringst_iterator_finish(StringStIterator* self) {
+    TST_iterator_free(self->iterator);
+    free(self);
+}
+
 // Visit all the key-value pairs in the order of their keys.
 void stringst_traverse(StringSt *self, void (*visit)(char *,  void *)) {
-    TST_traverse(self->tst, (void (*)(void *,  void *))visit);
+    if (self) {}; // warning suppression hihiih
+    if (visit) {}; // warning suppression hihiih
+    exception_throw_failure("stringst_traverse - Not implemented");
 }
 
 // Clean up the table memory.
