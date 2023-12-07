@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <float.h>
 
-#include "containerslib/forward_list.h"
 #include "containerslib/utils.h"
 
 #include "page_indexerlib/page_indexer.h"
@@ -11,7 +8,6 @@
 #include "google_page_rankerlib/page_rank.h"
 
 #include "enginelib/engine.h"
-#include "enginelib/search.h"
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -37,7 +33,7 @@ int main(int argc, char *argv[]) {
     // TODO remove
     if (page_rank_value) {}; // warning suppression hihiih
 
-    engine_run(index, /* TODO: PR data,*/ stdin, stdout);
+    engine_run(index, page_rank, stdin, stdout);
 
     free(graph_path);
     free(index_path);

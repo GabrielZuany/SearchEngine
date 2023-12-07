@@ -6,10 +6,11 @@
 #include "containerslib/string_set.h"
 #include "containerslib/utils.h"
 #include "containerslib/heap.h"
+#include "google_page_rankerlib/page_rank.h"
 
 #include "enginelib/search.h"
 
-long long int enginelib_search(Index *index, /* TODO: PR data,*/ FILE *in, Search *out) {
+long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Search *out) {
     char *query = NULL;
     size_t query_length = 0;
     ssize_t read;
@@ -37,7 +38,13 @@ long long int enginelib_search(Index *index, /* TODO: PR data,*/ FILE *in, Searc
 
     out->query = query;
     // TODO: extract PR given pages
-    //out->heap_pr_page = heap_init();
+    /* out->heap_pr_page = heap_init(); */
+    StringSetIterator *iterator = stringset_iterator_init(pages);
+    while (stringset_iterator_has_next(iterator)) {
+        char *page = stringset_iterator_next(iterator);
+        /* double pr = page_rank_get(page_rank, stringst_get(index->page_idpage_map, page)); */
+        /* heap_push(out->heap_pr_page, &pr, page); */
+    }
 
     // extract PR given pages
     if (pages) {}; //TODO

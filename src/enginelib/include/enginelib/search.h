@@ -5,6 +5,7 @@
 
 #include "containerslib/heap.h"
 #include "page_indexerlib/index.h"
+#include "google_page_rankerlib/page_rank.h"
 
 typedef struct Search Search;
 
@@ -14,7 +15,7 @@ struct Search
     Heap *heap_pr_page; // Heap<int, string>
 };
 
-long long int enginelib_search(Index *index, /* TODO: PR data,*/ FILE *in, Search *out);
+long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Search *out);
 
 Heap *enginelib_search_get_ranking(Search *search_result);
 
