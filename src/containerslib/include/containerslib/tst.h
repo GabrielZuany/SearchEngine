@@ -6,9 +6,9 @@ typedef struct TST TST;
 #include "containerslib/types.h"
 
 TST* TST_init();
-bool TST_insert(TST* self, char* key, data_type val);
+data_type TST_put(TST* self, char* key, data_type val);
 data_type TST_search(TST* self, char* key);
-void TST_free(TST* self, free_fn free_val);
+void TST_free(TST* self);
 int TST_empty(TST* self);
 int TST_size(TST* self);
 

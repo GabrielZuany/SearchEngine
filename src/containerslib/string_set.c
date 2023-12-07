@@ -17,7 +17,7 @@ StringSet *stringset_init() {
 }
 
 bool stringset_put(StringSet *self, char *key) {
-    return TST_insert(self->tst, key, self);
+    return TST_put(self->tst, key, self) != NULL;
 }
 
 bool stringset_contains(StringSet *self, char *key) {
@@ -49,6 +49,6 @@ void stringset_traverse(StringSet *self, void (*visit)(char *)) {
 
 // Clean up the table memory.
 void stringset_finish(StringSet *self) {
-    TST_free(self->tst, free);
+    TST_free(self->tst);
     free(self);
 }
