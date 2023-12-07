@@ -72,8 +72,9 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     StringSt* tst_in = stringst_init();
 
     ForwardList** out_links = calloc(n_lines + 2, sizeof(ForwardList*));
-    ForwardList** in_links = NULL;
+    ForwardList** in_links = calloc(self->n_pages, sizeof(ForwardList*));
     for(int i = 0; i < n_lines + 2; i++){ out_links[i] = forward_list_construct(); }
+    for(int i = 0; i < self->n_pages; i++){ in_links[i] = forward_list_construct(); }
 
     int tst_out_id = 0;
     int tst_in_id = 0;
@@ -108,8 +109,8 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
                 int* tst_in_id_ptr = malloc(sizeof(int));
                 *tst_in_id_ptr = tst_in_id;
                 stringst_put(tst_in, links[i], tst_in_id_ptr);
-                in_links = realloc(in_links, (tst_in_id + 1) * sizeof(ForwardList*));
-                in_links[tst_in_id] = forward_list_construct();
+                // in_links = realloc(in_links, (tst_in_id + 1) * sizeof(ForwardList*));
+                // in_links[tst_in_id] = forward_list_construct();
                 forward_list_push_front(in_links[tst_in_id], new_doc);
                 tst_in_id++;
             }else{
@@ -127,17 +128,17 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
 
     // fclose(graph_file);
 
-    char* key_in = "3391.txt";
-    char* key_out = "24011.txt";
-    int* id = (int*)stringst_get(self->tst_out, key_out);
-    printf("id: %d\n", *id);
-    ForwardList* out_links_from_page = get_out_links_from_page(self, key_out);
-    printf("out_links_from_page %s: ", key_out);
-    forward_list_print(out_links_from_page, print_string);
+    // char* key_in = "3391.txt";
+    // char* key_out = "24011.txt";
+    // int* id = (int*)stringst_get(self->tst_out, key_out);
+    // printf("id: %d\n", *id);
+    // ForwardList* out_links_from_page = get_out_links_from_page(self, key_out);
+    // printf("out_links_from_page %s: ", key_out);
+    // forward_list_print(out_links_from_page, print_string);
 
-    ForwardList* in_links_from_page = get_in_links_from_page(self, key_in);
-    printf("\nin_links_from_page %s: ", key_in);
-    forward_list_print(in_links_from_page, print_string);
+    // ForwardList* in_links_from_page = get_in_links_from_page(self, key_in);
+    // printf("\nin_links_from_page %s: ", key_in);
+    // forward_list_print(in_links_from_page, print_string);
     
     return self;
 }
@@ -161,50 +162,71 @@ void __init_page_rank(PageRank* self) {
     if (already_initialized) { return; }
 
     // power method initialization
-    double *page_rank_new = malloc(self->n_pages * sizeof(double));
-    for (int i = 0; i < self->n_pages; i++) { page_rank_new[i] = 1.0 / self->n_pages; }
+    double *page_rank_k_1 = malloc(self->n_pages * sizeof(double));
+    // for (int i = 0; i < self->n_pages; i++) { page_rank_k_1[i] = 1.0 / (double)self->n_pages; }
 
     // power method update
-    double delta = 0.0;
+    ForwardList** in_links = self->in_links;
+    ForwardList** out_links = self->out_links;
+    double delta_k = 0.0;
     double sum = 0.0;
-    do {
-        // Calculate page rank for each page
-        for (int i = 0; i < self->n_pages; i++) {
-            sum = 0.0;
-            Node* in_links_node = forward_list_get_head_node(self->in_links[i]);
-            
-            // SUM(j E In(i)) { page_rank[k-1](j) / |out_links(j)| }
-            while (in_links_node != NULL) {
-                char* document = (char*)node_get_value(in_links_node);
-                int page_j_E_In_i = *(int*)stringst_get(self->tst_out, document);
-                int size = forward_list_size(self->out_links[page_j_E_In_i]);
-                if(size != 0){ sum += self->page_rank[page_j_E_In_i] / size; }
-                in_links_node = forward_list_goto_next(in_links_node); 
-            }
+    bool is_first_iteration = true;
+    do{
+        delta_k = 0.0;
+        
+        if(is_first_iteration){
+            for (int i = 0; i < self->n_pages; i++) {self->page_rank[i] = page_rank_k_1[i] = 1.0 / (double)self->n_pages; }
+            is_first_iteration = false;
+            continue;
+        }
 
-            // page_rank[k](i) = (1 - alpha) / N + alpha * SUM(j E In(i)) { page_rank[k-1](j) / |out_links(j)| }
-            page_rank_new[i] = ((1 - DAMPING_FACTOR) / self->n_pages) + DAMPING_FACTOR * sum;
-            if ((forward_list_size(self->out_links[i]) - 1) == 0) {
-                //page_rank_new[i] += DAMPING_FACTOR * page_rank[i] / n_pages;
-                page_rank_new[i] += DAMPING_FACTOR * self->page_rank[i];
+        for(int i = 0; i < self->n_pages; i++){
+            sum = 0.0;
+            // SUM FUNCTION
+            Node* in_links_node = forward_list_get_head_node(in_links[i]);
+            while(in_links_node != NULL){ // for each document j in In(i)
+                char* document = (char*)node_get_value(in_links_node);
+                int j = *(int*)stringst_get(self->tst_out, document); // get list id of document j
+                int out_j_size = forward_list_size(out_links[j]);
+                sum += page_rank_k_1[j] / (double)out_j_size;
+                in_links_node = forward_list_goto_next(in_links_node);
             }
+            sum*=DAMPING_FACTOR;
+
+            sum+= (1 - DAMPING_FACTOR) / (double)self->n_pages;
+
+            int out_i_size = forward_list_size(out_links[i]);
+            if(out_i_size == 0){ // dangling node
+                sum += DAMPING_FACTOR * page_rank_k_1[i];
+            }
+            // sum is the PR(i) of the current iteration
+            page_rank_k_1[i] = sum;
         }
 
         // power method convergence
         // delta = (1 / pages) * SUM(i) { |page_rank[k](i) - page_rank[k-1](i)| }
-        delta = 0.0;
-        for (int i = 0; i < self->n_pages; i++) { delta += fabs(page_rank_new[i] - self->page_rank[i]); }
-        delta /= self->n_pages;
+        delta_k = 0.0;
+        for (int i = 0; i < self->n_pages; i++) { delta_k += fabs(page_rank_k_1[i] - self->page_rank[i]); }
+        delta_k /= self->n_pages;
+        
+        for(int i = 0; i<self->n_pages; i++){ self->page_rank[i] = page_rank_k_1[i];}
 
-        // page_rank[k-1](i) = page_rank[k](i)
-        for (int i = 0; i < self->n_pages; i++) { 
-            self->page_rank[i] = page_rank_new[i]; 
-        }
-
-    } while (delta > EPSILON);
-
-    free(page_rank_new);
+        // printf("delta_k: %.8f\n", delta_k);
+        if(delta_k < EPSLON){break;}        
+    }while(true);
+    
+    free(page_rank_k_1);
     already_initialized = true;
+    
+    for(int i=0; i< self->n_pages; i++){
+        // Node* in_links_node = forward_list_get_head_node(in_links[i]);
+        // char* document = (char*)node_get_value(in_links_node);
+        // int j = *(int*)stringst_get(self->tst_out, document); // get list id of document j
+
+        printf("page_rank[%d]: %.8f\n", i, self->page_rank[i]);
+        // printf("%s : %.8f\n", document, self->page_rank[j]);
+    }
+    // [0.03, 0.09541360, 0.74067280, 0.06695680, 0.06695680] 
 }
 
 double page_rank_get(PageRank* self, char* page){
