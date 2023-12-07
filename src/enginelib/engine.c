@@ -2,10 +2,10 @@
 
 #include "enginelib/engine.h"
 
-void engine_run(Index *index, /* TODO: PR data,*/ FILE *in, FILE *out) {
+void engine_run(Index *index, PageRank *page_rank, FILE *in, FILE *out) {
     Search search_result;
     long long int results;  
-    while ((results = enginelib_search(index, in, &search_result)) != -1)
+    while ((results = enginelib_search(index, page_rank, in, &search_result)) != -1)
     {
         Heap *ranking = enginelib_search_get_ranking(&search_result);
 
