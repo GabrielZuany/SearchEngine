@@ -1,4 +1,5 @@
 #include "containerslib/exceptions.h"
+#include "containerslib/forward_list.h"
 
 #include "containerslib/rbtree.h"
 
@@ -277,4 +278,79 @@ void rbtree_finish(RbTree *self) {
     __rbtree_finish_node(self->root);
 
     free(self);
+}
+
+// Definindo a estrutura do iterador
+struct RbTreeIterator {
+    RbTree *rbtree;
+    ForwardList *stack;
+    struct _RbNode *current;
+};
+
+static struct _RbNode *__find_min(struct _RbNode *node, ForwardList *stack) {
+    if (node->left != NULL) {
+        forward_list_push_front(stack, node->left);
+        return __find_min(node->left, stack);
+    }
+
+    forward_list_pop_front(stack);
+    return node;
+}
+
+// Função auxiliar para encontrar o próximo nó
+// enquanto procura, preenche o buffer com os caracteres
+// Ao mesmo tempo também mantem uma pilha de nós, para poder voltar recursivamente
+static struct _RbNode *__find_next(RbTreeIterator *iterator) {
+    struct _RbNode *curr = iterator->current;
+
+    if (curr->right != NULL) {
+        forward_list_push_front(iterator->stack, curr->right);
+        return __find_min(curr->right, iterator->stack);
+    }
+
+    while (!forward_list_is_empty(iterator->stack)) {
+        struct _RbNode *node = forward_list_pop_front(iterator->stack);
+
+        if (node->right == curr) {
+            curr = node;
+            continue;
+        }
+
+        return node;
+    }
+
+    return NULL;
+}
+
+bool rbtree_iterator_has_next(RbTreeIterator *iterator) {
+    return iterator->current != NULL;
+}
+
+void *rbtree_iterator_next(RbTreeIterator *iterator, char **out_key) {
+    if (!rbtree_iterator_has_next(iterator))
+        exception_throw_failure("rbtree_iterator_next - No next element.");
+
+    *out_key = iterator->current->key;
+    void *out_val = iterator->current->val;
+
+    iterator->current = __find_next(iterator);
+
+    return out_val;
+}
+
+// inicializar o iterador
+RbTreeIterator* rbtree_iterator_init(RbTree *rbtree) {
+    RbTreeIterator *iterator = malloc(sizeof(*iterator));
+
+    iterator->rbtree = rbtree;
+    iterator->stack = forward_list_construct();
+    iterator->current = __find_min(rbtree->root, iterator->stack);
+
+    return iterator;
+}
+
+// Função auxiliar para destruir o iterador
+void rbtree_iterator_free(RbTreeIterator *iterator) {
+    forward_list_destroy(iterator->stack);
+    free(iterator);
 }
