@@ -34,19 +34,24 @@ TST* TST_init() {
 }
 
 // imagino que quebre se a string for vazia, favor nao ousar
-static node* rec_insert(TST *tst, node* t, char* key, data_type val) {
+static node* rec_put(TST *tst, node* t, char* key, data_type val, data_type *out_val) {
     unsigned char c = *key;
     if (t == NULL) { t = create_node(); t->c = c;}
-    if      (c < t->c) { t->l = rec_insert(tst, t->l, key, val); }
-    else if (c > t->c) { t->r = rec_insert(tst, t->r, key, val); }
+    if      (c < t->c) { t->l = rec_put(tst, t->l, key, val, out_val); }
+    else if (c > t->c) { t->r = rec_put(tst, t->r, key, val, out_val); }
     else if (key[1] != '\0') {
-        t->m = rec_insert(tst, t->m, ++key, val);
-    } else { t->val = val; }
+        t->m = rec_put(tst, t->m, ++key, val, out_val);
+    }
+    else {
+        *out_val = t->val;
+        t->val = val;
+    }
     return t;
 }
 
-bool TST_insert(TST* t, char* key , data_type val) {
-    node *n = rec_insert(t, t->root, key, val);
+data_type TST_put(TST* t, char* key , data_type val) {
+    data_type out_val;
+    node *n = rec_put(t, t->root, key, val, &out_val);
 
     if (t->root == NULL) {
         t->root = n;
@@ -54,7 +59,7 @@ bool TST_insert(TST* t, char* key , data_type val) {
 
     t->size++;
 
-    return n != NULL;
+    return out_val;
 }
 
 // favor nao buscar strings vazias
@@ -82,17 +87,16 @@ int TST_size(TST* t) {
     return t->size;
 }
 
-static void rec_free(node* t, free_fn free_val) {
+static void rec_free(node* t) {
     if (t == NULL) { return; }
-    rec_free(t->l, free_val);
-    rec_free(t->m, free_val);
-    rec_free(t->r, free_val);
-    free_val(t->val);
+    rec_free(t->l);
+    rec_free(t->m);
+    rec_free(t->r);
     free(t);
 }
 
-void TST_free(TST* t, free_fn free_val) {
-    rec_free(t->root, free_val);
+void TST_free(TST* t) {
+    rec_free(t->root);
     free(t);
 }
 
