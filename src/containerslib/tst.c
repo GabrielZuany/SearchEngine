@@ -212,6 +212,8 @@ TST_iterator* TST_iterator_init(TST *tst) {
     TST_iterator *iterator = malloc(sizeof(*iterator));
     iterator->tst = tst;
     iterator->buffer = malloc(256); // TODO: tamanho dinamico conforme necessidade
+    // ^^^^
+    // jheam disse que isso aqui é criminoso e não concorda com suas atitudes
     iterator->index = 0;
     iterator->current = find_first(tst->root, iterator);
 
