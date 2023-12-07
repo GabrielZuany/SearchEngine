@@ -3,6 +3,6 @@
 
 char *utils_pathcat(const char *path1, const char *path2);
 
-char *utils_inplacestrtolower(char *str);
+void utils_inplacestrtolower(char *str);
 
 #endif

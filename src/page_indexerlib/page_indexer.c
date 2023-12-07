@@ -35,7 +35,8 @@ Index *pageindexer_create(const char *index_path, const char *pages_folder_path,
     free(page_name);
     fclose(index_file);
 
-    Index *index = index_init(word_pages_map, stop_words);
+    // TODO
+    Index *index = index_init(word_pages_map, NULL, NULL, stop_words);
 
     return index;
 }

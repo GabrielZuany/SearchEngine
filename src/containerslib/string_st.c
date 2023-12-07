@@ -12,7 +12,7 @@ struct StringSt {
 StringSt *stringst_init() {
     StringSt *self = malloc(sizeof(*self));
 
-    self->rbtree = rbtree_init(strcmp);
+    self->rbtree = rbtree_init((cmp_fn)strcmp);
 
     return self;
 }
@@ -20,16 +20,17 @@ StringSt *stringst_init() {
 // Put key-value pair into the table: a[key] = val; .
 void *stringst_put(StringSt *self, char *key, void *val) {
     char *out_key;
-    void *val = rbtree_put(self->rbtree, key, val, &out_key);
+    void *replaced_val = rbtree_put(self->rbtree, key, val, (void **)&out_key);
     if (out_key != NULL)
         free(out_key);
 
-    return val;
+    return replaced_val;
 }
 
 // Value paired with key: a[key] .
 void *stringst_get(StringSt *self, char *key) {
-    return rbtree_get(self->rbtree, key);
+    char *_;
+    return rbtree_get(self->rbtree, key, (void **)&_);
 }
 
 // Is there a value paired with key?
@@ -40,7 +41,7 @@ bool stringst_contains(StringSt *self, char *key) {
 // Remove key (and its value) from table.
 void *stringst_delete(StringSt *self, char *key) {
     char *out_key;
-    void *val = rbtree_delete(self->rbtree, key, &out_key);
+    void *val = rbtree_delete(self->rbtree, key, (void **)&out_key);
     free(out_key);
     return val;
 }
@@ -76,26 +77,22 @@ char *stringst_ceiling(StringSt *self, char *key) {
 }
 
 // Delete smallest key.
-void *stringst_delmin(StringSt *self) {
-    char *key;
-    void *val = rbtree_delmin(self->rbtree, &key);
-    free(key);
+void *stringst_delmin(StringSt *self, char **out_key) {
+    void *val = rbtree_delmin(self->rbtree, (void **)out_key);
 
     return val;
 }
 
 // Delete largest key.
-void *stringst_delmax(StringSt *self) {
-    char *key;
-    void *val = rbtree_delmax(self->rbtree, &key);
-    free(key);
+void *stringst_delmax(StringSt *self, char **out_key) {
+    void *val = rbtree_delmax(self->rbtree, (void **)out_key);
 
     return val;
 }
 
 // Visit all the key-value pairs in the order of their keys.
 void stringst_traverse(StringSt *self, void (*visit)(char *,  void *)) {
-    rbtree_traverse(self->rbtree, visit);
+    rbtree_traverse(self->rbtree, (void (*)(void *,  void *))visit);
 }
 
 // Clean up the table memory.

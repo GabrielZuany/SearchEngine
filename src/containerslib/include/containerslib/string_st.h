@@ -31,9 +31,9 @@ char *stringst_floor(StringSt *self, char *key);
 // Smallest key greater than to equal to key.
 char *stringst_ceiling(StringSt *self, char *key);
 // Delete smallest key.
-void *stringst_delmin(StringSt *self, char *key);
+void *stringst_delmin(StringSt *self, char **out_key);
 // Delete largest key.
-void *stringst_delmax(StringSt *self, char *key);
+void *stringst_delmax(StringSt *self, char **out_key);
 // Visit all the key-value pairs in the order of their keys.
 void stringst_traverse(StringSt *self, void (*visit)(char *,  void *));
 

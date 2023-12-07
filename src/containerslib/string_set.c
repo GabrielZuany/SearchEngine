@@ -1,7 +1,8 @@
 #include <string.h>
 
-#include "include/containerslib/string_set.h"
-#include "include/containerslib/tst.h"
+#include "containerslib/string_set.h"
+#include "containerslib/tst.h"
+#include "containerslib/exceptions.h"
 
 struct StringSet {
     TST *tst;
@@ -15,21 +16,18 @@ StringSet *stringset_init() {
     return self;
 }
 
-bool stringset_put(StringSet *self, char *key, void *val) {
-    return TST_insert(self->tst, key, val);
+bool stringset_put(StringSet *self, char *key) {
+    return TST_insert(self->tst, key, self);
 }
-
-void* stringset_get(StringSet *self, char *key) {
-    // return the val if the key is in the table, NULL otherwise
-    return TST_search(self->tst, key);
-}  
 
 bool stringset_contains(StringSet *self, char *key) {
     return TST_search(self->tst, key) != NULL;
 }
 
 void stringset_delete(StringSet *self, char *key) {
-    // TODO: não tem delete na TST ainda
+    if (self) {}; // warning suppression hihiih
+    if (key) {}; // warning suppression hihiih
+    exception_throw_failure("stringset_delete - Not implemented");
 }
 
 // Is the table empty?
@@ -44,7 +42,9 @@ int stringset_size(StringSet *self) {
 
 // Visit all the key-value pairs in the order of their keys.
 void stringset_traverse(StringSet *self, void (*visit)(char *)) {
-    TST_traverse(self->tst, visit);
+    if (self) {}; // warning suppression hihiih
+    if (visit) {}; // warning suppression hihiih
+    exception_throw_failure("stringset_traverse - Not implemented");
 }
 
 // Clean up the table memory.

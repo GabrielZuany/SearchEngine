@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "include/containerslib/forward_list.h"
-#include "include/containerslib/node.h"
+
+#include "containerslib/forward_list.h"
+#include "containerslib/node.h"
 
 struct ForwardList
 {

@@ -8,9 +8,8 @@ typedef struct StringSet StringSet;
 
 StringSet *stringset_init();
 
-bool stringset_put(StringSet *self, char *key, void *val);
+bool stringset_put(StringSet *self, char *key);
 bool stringset_contains(StringSet *self, char *key);
-void* stringset_get(StringSet *self, char *key);
 void stringset_delete(StringSet *self, char *key);
 bool stringset_empty(StringSet *self);
 int stringset_size(StringSet *self);

@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "include/containerslib/utils.h"
 
+#include "containerslib/utils.h"
 
 char *utils_pathcat(const char *path1, const char *path2) {
     size_t path1_length = strlen(path1);
@@ -20,6 +20,6 @@ char *utils_pathcat(const char *path1, const char *path2) {
     return path;
 }
 
-char *utils_inplacestrtolower(char *str) {
+void utils_inplacestrtolower(char *str) {
     for ( ; *str; ++str) *str = tolower(*str);
 }
