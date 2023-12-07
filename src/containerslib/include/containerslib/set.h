@@ -21,7 +21,7 @@ typedef struct SetIterator SetIterator;
 
 SetIterator *set_iterator_init(Set* self);
 bool set_iterator_has_next(SetIterator *iterator);
-char *set_iterator_next(SetIterator *self);
+void *set_iterator_next(SetIterator *self);
 void set_iterator_finish(SetIterator* self);
 
 // Clean up the table memory.

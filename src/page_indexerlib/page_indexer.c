@@ -41,7 +41,7 @@ Index *pageindexer_create(const char *index_path, const char *pages_folder_path,
             idpage_page_map = realloc(idpage_page_map, __SIZEOF_POINTER__ * size);
         }
         idpage_page_map[len++] = strdup_page_name;
-        stringst_put(page_idpage_map, strdup_page_name, (int *)len);
+        stringst_put(page_idpage_map, strdup_page_name, (size_t *)len);
 
         __pageindexer_index_page(strdup_page_name, len, pages_folder_path, stop_words, word_idspageset_map);
     }

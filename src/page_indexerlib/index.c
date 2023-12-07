@@ -55,21 +55,54 @@ static size_t __index_get_pageid_from_pagename(Index *index, char *page_name)
 StringSet *index_intersect_pages(Index *index, StringSet *words) {
     exception_throw_failure("index_intersect_pages - Not implemented");
 
-    StringSet *pages = stringset_init();
+    StringSet *pages = stringset_init(); // Set<string>
 
-    // TODO: implementar
-    if (index) {}; // warning suppression hihiih
-    if (__index_get_page_from_pageid(index, 0)) {}; // warning suppression hihiih
-    if (__index_get_pageid_from_pagename(index, NULL)) {}; // warning suppression hihiih
+    Heap *heap = heap_init(MIN_HEAP, 2, __SIZEOF_POINTER__, (free_fn)set_iterator_finish);
 
-    // giovanni estou usando uma funcao do fun with bits esta orgulhoso?
-    Heap *heap = heap_init(MIN_HEAP, __builtin_clz(stringset_size(words)), sizeof(int), NULL);
-    //                     ^^^^^^^^
-    //                    stolen https://stackoverflow.com/a/3272516
+    StringSetIterator *iterator = stringset_iterator_init(words);
+    while (stringset_iterator_has_next(iterator)) {
+        char *word = stringset_iterator_next(iterator);
 
-    //TST_iterator *iterator = 
+        if (stringset_contains(index->ref_stop_words, word))
+            continue;
 
-    if (heap) {}; // warning suppression hihiih
+        Set *idspageset = stringst_get(index->word_idspageset_map, word);
+        if (idspageset == NULL) {
+            stringset_iterator_finish(iterator);
+            return pages;
+        }
+
+        SetIterator *iter = set_iterator_init(idspageset);
+        heap_push(heap, &iter, (size_t)set_iterator_next(iter));
+    }
+    stringset_iterator_finish(iterator);
+
+    size_t page_id = 0;
+    size_t page_count = 0;
+    size_t num_words = heap_len(heap);
+    while (heap_len(heap) > 0) {
+        if (page_count == num_words) {
+            page_count = 0;
+            page_id = 0;
+
+            stringset_put(pages, __index_get_page_from_pageid(index, page_id));
+        }
+
+        SetIterator *curr_iter;
+        size_t curr_page_id = heap_pop(heap, &curr_iter);
+        if (page_id != curr_page_id) {
+            page_id = curr_page_id;
+            page_count = 1;
+        } else {
+            page_count++;
+        }
+
+        if (set_iterator_has_next(curr_iter))
+            heap_push(heap, &curr_iter, (size_t)set_iterator_next(curr_iter));
+        else
+            break;
+    }
+    heap_free(heap);
 
     return pages;
 }

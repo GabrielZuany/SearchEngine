@@ -26,7 +26,7 @@ typedef struct RbTreeIterator RbTreeIterator;
 
 RbTreeIterator* rbtree_iterator_init(RbTree *self);
 bool rbtree_iterator_has_next(RbTreeIterator *iterator);
-void *rbtree_iterator_next(RbTreeIterator *iterator, char **out_key);
+void *rbtree_iterator_next(RbTreeIterator *iterator, void **out_key);
 void rbtree_iterator_free(RbTreeIterator* self);
 
 void rbtree_finish(RbTree *self);

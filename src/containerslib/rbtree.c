@@ -326,7 +326,7 @@ bool rbtree_iterator_has_next(RbTreeIterator *iterator) {
     return iterator->current != NULL;
 }
 
-void *rbtree_iterator_next(RbTreeIterator *iterator, char **out_key) {
+void *rbtree_iterator_next(RbTreeIterator *iterator, void **out_key) {
     if (!rbtree_iterator_has_next(iterator))
         exception_throw_failure("rbtree_iterator_next - No next element.");
 

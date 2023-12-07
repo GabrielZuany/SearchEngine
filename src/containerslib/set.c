@@ -52,8 +52,8 @@ bool set_iterator_has_next(SetIterator *self) {
     return rbtree_iterator_has_next(self->iterator);
 }
 
-char *set_iterator_next(SetIterator *self) {
-    char *out_key;
+void *set_iterator_next(SetIterator *self) {
+    void *out_key;
     rbtree_iterator_next(self->iterator, &out_key);
     return out_key;
 }

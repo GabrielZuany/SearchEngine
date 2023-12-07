@@ -45,6 +45,9 @@ long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Sear
         double pr = page_rank_get(page_rank, page);
         heap_push(out->heap_pr_page, &page, pr);
     }
+    stringset_iterator_finish(iterator);
+
+    stringset_finish(pages);
 
     return (long long int)heap_len(out->heap_pr_page);
 }
