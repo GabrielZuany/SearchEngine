@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "containerslib/utils.h"
+#include "include/containerslib/utils.h"
 
 char *utils_pathcat(const char *path1, const char *path2) {
     size_t path1_length = strlen(path1);

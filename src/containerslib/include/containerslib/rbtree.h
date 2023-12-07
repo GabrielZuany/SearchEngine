@@ -1,7 +1,7 @@
 #ifndef _CONTAINERSLIB_RBTREE_H_
 #define _CONTAINERSLIB_RBTREE_H_
 
-#include "containerslib/types.h"
+#include "types.h"
 
 typedef struct RbTree RbTree;
 

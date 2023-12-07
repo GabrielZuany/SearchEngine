@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "containerslib/exceptions.h"
+#include "include/containerslib/exceptions.h"
 
 void exception_throw(char *name, char *msg, int code) {
     fprintf(stderr, "%s\n\n%s\n", name, msg);

@@ -13,8 +13,8 @@ struct PageRank
     ForwardList** in_links;
     int n_pages;
     double* page_rank;
-    StringSet* tst_out;
-    StringSet* tst_in;
+    StringSt* tst_out;
+    StringSt* tst_in;
 };
 
 PageRank* page_rank_init(int n_pages){
@@ -36,11 +36,14 @@ void page_rank_finish(PageRank* self){
     free(self->out_links);
     free(self->in_links);
     free(self->page_rank);
-    stringset_finish(self->tst_out);
-    stringset_finish(self->tst_in);
+    stringst_finish(self->tst_out);
+    stringst_finish(self->tst_in);
     free(self);
 }
 
+void print_string(char* str){
+    printf("%s", str);
+}
 PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     // filename number of links link1 link2 ... linkN
     // 24011.txt 7 3391.txt 12241.txt 12682.txt 6762.txt 30380.txt 17661-8.txt 22322-8.txt
@@ -58,48 +61,47 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
             n_lines++;
         }
     }
-    n_lines--; // desconsidera a ultima linha vazia
+    n_lines--; // desconsidera a ultima linha
     rewind(graph_file);
 
-    StringSet* tst_out = stringset_init();
-    StringSet* tst_in = stringset_init();
+    StringSt* tst_out = stringst_init();
+    StringSt* tst_in = stringst_init();
 
-    ForwardList** out_links = calloc(n_lines, sizeof(ForwardList*));
+    ForwardList** out_links = calloc(n_lines + 2, sizeof(ForwardList*));
     ForwardList** in_links = NULL;
-    for(int i = 0; i < n_lines; i++){ out_links[i] = forward_list_construct(); }
+    for(int i = 0; i < n_lines + 2 ; i++){ out_links[i] = forward_list_construct(); }
 
     int tst_out_id = 0;
     int tst_in_id = 0;
     char* filename = malloc(100 * sizeof(char));
     int* n_links = malloc(sizeof(int));
     while(!feof(graph_file)) {
-        fscanf(graph_file, "%s", filename);
+        fscanf(graph_file, "%s", filename);        
         fscanf(graph_file, "%d", n_links);
         char** links = calloc(*(n_links) , sizeof(char*));
 
         // add na TST(1) o filename(doc atual) com o tst_out_id associado
         int* tst_out_id_ptr = malloc(sizeof(int));
         *tst_out_id_ptr = tst_out_id;
-        stringset_put(tst_out, filename, tst_out_id_ptr);
+        stringst_put(tst_out, filename, tst_out_id_ptr);
 
         for(int i = 0; i < *(n_links); i++){
             links[i] = calloc(sizeof(char), 20);
             fscanf(graph_file, "%s", links[i]);
-
-            // add na TST(2) o links[i] com o tst_out_id associado (NAO ATUALIZA O ID)
-            // se o cara ja estiver na TST(2), entao eu add na lista[ID] dele o filename(doc atual)
-            // se o cara nao estiver na TST(2), entao eu crio a lista[ID] dele e add o filename(doc atual)
-            // doc_out -> doc_in (doc_out tem um link para doc_in)
             
-            if (!stringset_contains(tst_in, links[i])) {
+            if (!stringst_contains(tst_in, links[i])) {
                 int* tst_in_id_ptr = malloc(sizeof(int));
                 *tst_in_id_ptr = tst_in_id;
-                stringset_put(tst_in, links[i], tst_in_id_ptr);
+                stringst_put(tst_in, links[i], tst_in_id_ptr);
                 in_links = realloc(in_links, (tst_in_id + 1) * sizeof(ForwardList*));
                 in_links[tst_in_id] = forward_list_construct();
                 forward_list_push_front(in_links[tst_in_id], filename); // filename -> links[i](in_links[tst_in_id])
                 tst_in_id++;
+            }else{
+                int* tst_in_id_ptr = (int*)stringst_get(tst_in, links[i]);
+                forward_list_push_front(in_links[*tst_in_id_ptr], filename); // filename -> links[i](in_links[tst_in_id])
             }
+
             if(out_links[tst_out_id] != NULL) // links[i](out_links[tst_out_id]) -> filename
                 forward_list_push_front(out_links[tst_out_id], links[i]);
             else{
@@ -107,7 +109,6 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
                 forward_list_push_front(out_links[tst_out_id], links[i]);
             }
             
-            printf(">> %s\n", links[i]);
         }
         tst_out_id++;
     }
@@ -120,20 +121,27 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     fclose(graph_file);
     // free(filename);
     // free(n_links);
+
+    char* key = "3391.txt";
+    int* id = (int*)stringst_get(self->tst_out, key);
+    printf("id: %d\n", *id);
+    ForwardList* out_links_from_page = get_out_links_from_page(self, key);
+    printf("out_links_from_page %s: ", key);
+    forward_list_print(out_links_from_page, print_string);
     
     return self;
 }
 
 ForwardList* get_out_links_from_page(PageRank* self, char* filename){
     // recupera o Id associado ao filename na TST(1)
-    int* id = (int*)stringset_get(self->tst_out, filename);
+    int* id = (int*)stringst_get(self->tst_out, filename);
     if(id == NULL){ return NULL; }
     return self->out_links[*id];
 }
 
 ForwardList* get_in_links_from_page(PageRank* self, char* filename){
     // recupera o Id associado ao filename na TST(2)
-    int* id = (int*)stringset_get(self->tst_in, filename);
+    int* id = (int*)stringst_get(self->tst_in, filename);
     if(id == NULL){ return NULL; }
     return self->in_links[*id];
 }

@@ -3,7 +3,7 @@
 
 typedef struct TST TST;
 #define data_type void*
-#include "containerslib/types.h"
+#include "types.h"
 
 TST* TST_init();
 data_type TST_put(TST* self, char* key, data_type val);

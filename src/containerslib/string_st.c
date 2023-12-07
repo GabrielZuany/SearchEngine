@@ -1,8 +1,8 @@
 #include <string.h>
 
-#include "containerslib/tst.h"
+#include "include/containerslib/tst.h"
 
-#include "containerslib/string_st.h"
+#include "include/containerslib/string_st.h"
 
 struct StringSt {
     TST *tst;
@@ -19,11 +19,7 @@ StringSt *stringst_init() {
 
 // Put key-value pair into the table: a[key] = val; .
 void *stringst_put(StringSt *self, char *key, void *val) {
-    char *out_key;
-    void *replaced_val = TST_insert(self->tst, key, val);
-    if (out_key != NULL)
-        free(out_key);
-
+    void *replaced_val = TST_put(self->tst, key, val);
     return replaced_val;
 }
 
