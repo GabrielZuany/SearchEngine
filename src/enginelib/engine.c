@@ -4,7 +4,7 @@
 
 void engine_run(Index *index, PageRank *page_rank, FILE *in, FILE *out) {
     Search search_result;
-    long long int results;  
+    long long int results;
     while ((results = enginelib_search(index, page_rank, in, &search_result)) != -1)
     {
         Heap *ranking = enginelib_search_get_ranking(&search_result);

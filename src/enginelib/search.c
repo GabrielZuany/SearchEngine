@@ -10,6 +10,8 @@
 
 #include "enginelib/search.h"
 
+void __free_fn(void *str) { free(str); }
+
 long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Search *out) {
     char *query = NULL;
     size_t query_length = 0;
@@ -38,16 +40,13 @@ long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Sear
 
     out->query = query;
     // TODO: extract PR given pages
-    /* out->heap_pr_page = heap_init(); */
+    out->heap_pr_page = heap_init(MIN_HEAP, 16, sizeof(char *), __free_fn);
     StringSetIterator *iterator = stringset_iterator_init(pages);
     while (stringset_iterator_has_next(iterator)) {
         char *page = stringset_iterator_next(iterator);
-        /* double pr = page_rank_get(page_rank, stringst_get(index->page_idpage_map, page)); */
-        /* heap_push(out->heap_pr_page, &pr, page); */
+        double pr = page_rank_get(page_rank, page);
+        heap_push(out->heap_pr_page, page, pr);
     }
-
-    // extract PR given pages
-    if (pages) {}; //TODO
 
     return (long long int)heap_len(out->heap_pr_page);
 }
