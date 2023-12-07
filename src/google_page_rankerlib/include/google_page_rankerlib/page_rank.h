@@ -2,7 +2,7 @@
 #define _PAGERANKERLIB_PAGE_RANK_H_
 
 #define DAMPING_FACTOR 0.85
-#define EPSILON 0.000001 // 10^-6
+#define EPSLON 0.000001 // 10^-6
 
 // #include "../../../containerslib/include/containerslib/forward_list.h"
 // #include "../../../containerslib/include/containerslib/string_st.h"
