@@ -53,8 +53,6 @@ static size_t __index_get_pageid_from_pagename(Index *index, char *page_name)
 }
 
 StringSet *index_intersect_pages(Index *index, StringSet *words) {
-    exception_throw_failure("index_intersect_pages - Not implemented");
-
     StringSet *pages = stringset_init(); // Set<string>
 
     Heap *heap = heap_init(MIN_HEAP, 2, __SIZEOF_POINTER__, (free_fn)set_iterator_finish);
