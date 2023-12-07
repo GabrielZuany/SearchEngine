@@ -1,4 +1,9 @@
 #include <stdlib.h>
+// #include "include/containerslib/exceptions.h"
+// #include "include/containerslib/tst.h"
+// #include "include/containerslib/types.h"
+// #include "include/containerslib/forward_list.h"
+
 #include "containerslib/exceptions.h"
 #include "containerslib/tst.h"
 #include "containerslib/types.h"
@@ -92,6 +97,7 @@ static void rec_free(node* t) {
     rec_free(t->l);
     rec_free(t->m);
     rec_free(t->r);
+    free(t->val);
     free(t);
 }
 
