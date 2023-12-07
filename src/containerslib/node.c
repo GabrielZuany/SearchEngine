@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+// #include "include/containerslib/node.h"
 #include "containerslib/node.h"
 
 struct Node
@@ -24,6 +25,7 @@ Node *node_get_next(Node *n){
 }
 
 void node_destroy(Node *n){
+    if(n->value != NULL){ free(n->value);}
     free(n);
 }
 
