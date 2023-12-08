@@ -28,10 +28,6 @@ int main(int argc, char *argv[]) {
     int n_pages = 0;
     PageRank* page_rank = page_rank_init(n_pages);
     page_rank_build_links(page_rank, graph_path);
-    double page_rank_value = page_rank_get(page_rank, 0);
-
-    // TODO remove
-    if (page_rank_value) {}; // warning suppression hihiih
 
     engine_run(index, page_rank, stdin, stdout);
 
