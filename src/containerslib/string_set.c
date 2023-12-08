@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 #include "containerslib/string_set.h"
 #include "containerslib/tst.h"

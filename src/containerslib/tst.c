@@ -128,7 +128,7 @@ static node *rec_find_first(node *n, TST_iterator *iterator){
     // Se o nó atual tiver valor, retorna ele
     if (n->val != NULL) {
         // adiciona o '\0' no final do buffer
-        iterator->buffer[iterator->index] = '\0';
+        iterator->buffer[iterator->index + 1] = '\0';
         return n;
     }
 
@@ -164,7 +164,6 @@ static node *rec_find_first(node *n, TST_iterator *iterator){
 static node *find_first(node *t, TST_iterator *iterator) {
     // Reinicia o buffer e a pilha
     iterator->index = 0;
-    forward_list_destroy(iterator->stack);
     iterator->stack = forward_list_construct();
 
     // Começa a procurar
@@ -175,6 +174,17 @@ static node *find_first(node *t, TST_iterator *iterator) {
 // enquanto procura, preenche o buffer com os caracteres
 // Ao mesmo tempo também mantem uma pilha de nós, para poder voltar recursivamente
 static node *find_next(node *t, TST_iterator *iterator) {
+    if (t == NULL) {
+        return NULL;
+    }
+
+    // Se o nó atual tiver valor, retorna ele
+    if (t->val != NULL) {
+        // adiciona o '\0' no final do buffer
+        iterator->buffer[iterator->index + 1] = '\0';
+        return t;
+    }
+
     // Se o nó atual tiver filho do meio, adiciona ele na pilha e continua procurando
     if (t->m != NULL) {
         forward_list_push_front(iterator->stack, t->m);
@@ -228,7 +238,6 @@ TST_iterator* TST_iterator_init(TST *tst) {
 
 // Função auxiliar para destruir o iterador
 void TST_iterator_free(TST_iterator *iterator) {
-    free(iterator->buffer);
     free(iterator);
 }
 
