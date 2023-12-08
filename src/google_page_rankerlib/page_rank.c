@@ -84,9 +84,10 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     char* filename = malloc(100 * sizeof(char));
     int* n_links = malloc(sizeof(int));
     char** links = NULL;
+    
     while(!feof(graph_file)) {
-        if (fscanf(graph_file, "%s", filename)) {};
-        if (fscanf(graph_file, "%d", n_links)) {};
+        if (fscanf(graph_file, "%s", filename)) {};     // warning suppression
+        if (fscanf(graph_file, "%d", n_links)) {};      // warning suppression
         links = calloc(*(n_links) , sizeof(char*));
 
         // add na TST(out) o filename(doc atual) com o tst_out_id associado
@@ -174,11 +175,11 @@ void __init_page_rank(PageRank* self) {
         for(int i = 0; i < self->n_pages; i++){
             sum = 0.0;
             // SUM FUNCTION
-            Node* in_links_node = forward_list_get_head_node(in_links[i]);
-            while(in_links_node != NULL){ // for each document j in In(i)
+            Node* in_links_node = forward_list_get_head_node(in_links[i]);  // set of pages that link to page i
+            while(in_links_node != NULL){                                   // for each document j in In(i) loop
                 char* document = (char*)node_get_value(in_links_node);
-                int j = *(int*)stringst_get(self->tst_out, document); // get list id of document j
-                int out_j_size = forward_list_size(out_links[j]);
+                int j = *(int*)stringst_get(self->tst_out, document);       // get list id of document j
+                int out_j_size = forward_list_size(out_links[j]);           // get number of outlinks in document j
                 sum += page_rank_k_1[j] / (double)out_j_size;
                 in_links_node = forward_list_goto_next(in_links_node);
             }
@@ -191,6 +192,10 @@ void __init_page_rank(PageRank* self) {
                 sum += DAMPING_FACTOR * page_rank_k_1[i];
             }
             // sum is the PR(i) of the current iteration
+            // TEM QUE ATUALIZAR NA POSICAO DESSE CARA, NAO NO i, OLHA A CHAMADA DA FUNCAO DE BAIXO!!!
+            // o primeiro que ele pega eh o e.txt (i = 4), mas o primeiro que ele atualiza eh o a.txt (i = 0)
+            // ele tem que atualizar na posicao do i, nao no i
+                        
             page_rank_k_1[i] = sum;
         }
 
@@ -202,7 +207,6 @@ void __init_page_rank(PageRank* self) {
         
         for(int i = 0; i<self->n_pages; i++){ self->page_rank[i] = page_rank_k_1[i];}
 
-        // printf("delta_k: %.8f\n", delta_k);
         if(delta_k < EPSLON){break;}        
     }while(true);
         
