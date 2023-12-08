@@ -5,6 +5,7 @@
 #include "google_page_rankerlib/page_rank.h"
 #include <math.h>
 #include <stdbool.h>
+#include <unistd.h>
 // gcc -o teste_page_rank src/containerslib/node.c src/containerslib/forward_list.c src/containerslib/utils.c src/google_page_rankerlib/page_rank.c src/main.c src/containerslib/string_st.c src/containerslib/tst.c  src/containerslib/exceptions.c -g
 
 // no launch.json
@@ -45,9 +46,6 @@ void page_rank_finish(PageRank* self){
     free(self);
 }
 
-void print_string(void* str){
-    printf("%s", (char*)str);
-}
 PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     // filename number of links link1 link2 ... linkN
     // 24011.txt 7 3391.txt 12241.txt 12682.txt 6762.txt 30380.txt 17661-8.txt 22322-8.txt
@@ -61,19 +59,16 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     char ch;
     while(!feof(graph_file)){
         ch = fgetc(graph_file);
-        if(ch == '\n'){
-            n_lines++;
-        }
+        if(ch == '\n'){ n_lines++; }
     }
-    n_lines--; // desconsidera a ultima linha
     rewind(graph_file);
 
     StringSt* tst_out = stringst_init();
     StringSt* tst_in = stringst_init();
 
-    ForwardList** out_links = calloc(n_lines + 2, sizeof(ForwardList*));
+    ForwardList** out_links = calloc(n_lines + 1, sizeof(ForwardList*));
     ForwardList** in_links = calloc(self->n_pages, sizeof(ForwardList*));
-    for(int i = 0; i < n_lines + 2; i++){ out_links[i] = forward_list_construct(); }
+    for(int i = 0; i < n_lines + 1; i++){ out_links[i] = forward_list_construct(); }
     for(int i = 0; i < self->n_pages; i++){ in_links[i] = forward_list_construct(); }
 
     int tst_out_id = 0;
@@ -84,8 +79,8 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     char* filename = malloc(100 * sizeof(char));
     int* n_links = malloc(sizeof(int));
     char** links = NULL;
-    
-    while(!feof(graph_file)) {
+       
+    for(int i = 0; i < n_lines; i++) {
         if (fscanf(graph_file, "%s", filename)) {};     // warning suppression
         if (fscanf(graph_file, "%d", n_links)) {};      // warning suppression
         links = calloc(*(n_links) , sizeof(char*));
@@ -209,11 +204,6 @@ void __init_page_rank(PageRank* self) {
 
         if(delta_k < EPSLON){break;}        
     }while(true);
-        
-    for(int i=0; i< self->n_pages; i++){
-        printf("[%d]: %.8f\n",i, self->page_rank[i]);
-    }
-    // [0.03, 0.09541360, 0.74067280, 0.06695680, 0.06695680] 
 
     free(page_rank_k_1);
     already_initialized = true;
