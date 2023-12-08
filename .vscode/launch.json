@@ -2,23 +2,24 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "C/C++ Runner: Debug Session",
+      "name": "Run debug",
       "type": "cppdbg",
       "request": "launch",
-      "args": [],
+      "program": "${workspaceFolder}/src/build/debug/main",
+      "args": ["exemplos/exemplo/"],
       "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/",
+      "environment": [],
       "externalConsole": false,
-      "cwd": "/home/zuany/LinuxWorkEnvironmnet/SearchEngine/src",
-      "program": "/home/zuany/LinuxWorkEnvironmnet/SearchEngine/src/build/Debug/outDebug",
       "MIMode": "gdb",
-      "miDebuggerPath": "gdb",
       "setupCommands": [
         {
           "description": "Enable pretty-printing for gdb",
           "text": "-enable-pretty-printing",
           "ignoreFailures": true
         }
-      ]
-    }
+      ],
+      "preLaunchTask": "build debug"
+    },
   ]
 }

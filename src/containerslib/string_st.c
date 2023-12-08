@@ -110,9 +110,7 @@ void stringst_iterator_finish(StringStIterator* self) {
 
 // Visit all the key-value pairs in the order of their keys.
 void stringst_traverse(StringSt *self, void (*visit)(char *,  void *)) {
-    if (self) {}; // warning suppression hihiih
-    if (visit) {}; // warning suppression hihiih
-    exception_throw_failure("stringst_traverse - Not implemented");
+    TST_traverse(self->tst, visit);
 }
 
 // Clean up the table memory.

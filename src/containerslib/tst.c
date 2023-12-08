@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <string.h>
+
 // #include "include/containerslib/exceptions.h"
 // #include "include/containerslib/tst.h"
 // #include "include/containerslib/types.h"
@@ -39,13 +41,13 @@ TST* TST_init() {
 }
 
 // imagino que quebre se a string for vazia, favor nao ousar
-static node* rec_put(TST *tst, node* t, const char* key, data_type val, data_type *out_val) {
-    const unsigned char c = *key;
+static node* rec_put(TST *tst, node* t, const char* key, size_t i, size_t len, data_type val, data_type *out_val) {
+    const unsigned char c = key[i];
     if (t == NULL) { t = create_node(); t->c = c;}
-    if      (c < t->c) { t->l = rec_put(tst, t->l, key, val, out_val); }
-    else if (c > t->c) { t->r = rec_put(tst, t->r, key, val, out_val); }
-    else if (key[1] != '\0') {
-        t->m = rec_put(tst, t->m, ++key, val, out_val);
+    if      (c < t->c) { t->l = rec_put(tst, t->l, key, i, len, val, out_val); }
+    else if (c > t->c) { t->r = rec_put(tst, t->r, key, i, len, val, out_val); }
+    else if (i < len - 1) {
+        t->m = rec_put(tst, t->m, key, i + 1, len, val, out_val);
     }
     else {
         *out_val = t->val;
@@ -56,7 +58,7 @@ static node* rec_put(TST *tst, node* t, const char* key, data_type val, data_typ
 
 data_type TST_put(TST* t, const char* key , data_type val) {
     data_type out_val;
-    node *n = rec_put(t, t->root, key, val, &out_val);
+    node *n = rec_put(t, t->root, key, 0, strlen(key), val, &out_val);
 
     if (t->root == NULL) {
         t->root = n;
@@ -68,18 +70,19 @@ data_type TST_put(TST* t, const char* key , data_type val) {
 }
 
 // favor nao buscar strings vazias
-static node* rec_search(node* t, char* key) {
+static node* rec_search(node* t, char* key, size_t i, size_t len) {
     if (t == NULL) { return NULL; }
-    unsigned char c = *key;
-    if      (c < t->c) { return rec_search(t->l, key); }
-    else if (c > t->c) { return rec_search(t->r, key); }
-    else if (key[1] != '\0') {
-        return rec_search(t->m, ++key);
+    unsigned char c = key[i];
+    if      (c < t->c) { return rec_search(t->l, key, i, len); }
+    else if (c > t->c) { return rec_search(t->r, key, i, len); }
+    else if (i < len - 1) {
+        return rec_search(t->m, key, i + 1, len);
     } else { return t; }
 }
 
 data_type TST_search(TST* t, char* key) {
-    node *n = rec_search(t->root, key);
+    size_t len = strlen(key);
+    node *n = rec_search(t->root, key, 0, len);
     if (n == NULL)  { return NULL; } // se for modificar o tipo de retorno, favor mudar aqui
     else            { return n->val; }
 }
