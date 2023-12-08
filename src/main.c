@@ -3,6 +3,7 @@
 
 #include "containerslib/utils.h"
 
+#include "page_indexerlib/index.h"
 #include "page_indexerlib/page_indexer.h"
 
 #include "google_page_rankerlib/page_rank.h"
@@ -25,7 +26,7 @@ int main(int argc, char *argv[]) {
     StringSet *stop_words = pageindexer_read_stop_words(stop_words_path);
     Index *index = pageindexer_create(index_path, pages_folder_path, stop_words);
 
-    int n_pages = 50;
+    size_t n_pages = index_get_num_pages(index);
     PageRank* page_rank = page_rank_init(n_pages);
     page_rank_build_links(page_rank, graph_path);
 

@@ -72,9 +72,8 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
         }
 
         SetIterator *iter = set_iterator_init(idspageset);
-        if (set_iterator_has_next(iter)) {
+        if (set_iterator_has_next(iter))
             heap_push(heap, &iter, (size_t)set_iterator_next(iter));
-        }
     }
     stringset_iterator_finish(iterator);
 
@@ -111,6 +110,10 @@ static void __index_finish_stringset(char *key, void *value)
 {
     if (key) {}; // warning suppression hihiih
     set_finish(value);
+}
+
+size_t index_get_num_pages(Index *index) {
+    return index->len;
 }
 
 void index_finish(Index *index)
