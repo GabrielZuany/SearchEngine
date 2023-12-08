@@ -293,6 +293,9 @@ static struct _RbNode *__find_min(struct _RbNode *node, ForwardList *stack) {
         return __find_min(node->left, stack);
     }
 
+    if(forward_list_is_empty(stack))
+        return NULL;
+
     forward_list_pop_front(stack);
     return node;
 }
