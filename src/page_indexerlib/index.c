@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "containerslib/string_set.h"
 #include "containerslib/string_st.h"
 #include "containerslib/heap.h"
@@ -71,7 +72,9 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
         }
 
         SetIterator *iter = set_iterator_init(idspageset);
-        heap_push(heap, &iter, (size_t)set_iterator_next(iter));
+        if (set_iterator_has_next(iter)) {
+            heap_push(heap, &iter, (size_t)set_iterator_next(iter));
+        }
     }
     stringset_iterator_finish(iterator);
 
@@ -89,10 +92,9 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
         }
 
         if (page_count == num_words) {
+            stringset_put(pages, __index_get_page_from_pageid(index, page_id));
             page_count = 0;
             page_id = 0;
-
-            stringset_put(pages, __index_get_page_from_pageid(index, page_id));
         }
 
         if (set_iterator_has_next(curr_iter))
