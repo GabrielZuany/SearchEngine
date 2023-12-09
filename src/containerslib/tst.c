@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "containerslib/exceptions.h"
 #include "containerslib/tst.h"
 #include "containerslib/types.h"
@@ -17,13 +18,26 @@ struct TST {
     int size;
 };
 
-static node* create_node() {
+typedef struct{
+    node *n;
+    char c;
+}stack_node;
+
+static stack_node* stack_node_construct(node *n, char c){
+    stack_node *sn = malloc(sizeof(*sn));
+    sn->n = n;
+    sn->c = c;
+    return sn;
+}
+
+static node* create_node(node *p) {
     node* n = malloc(sizeof(*n));
     n->val = NULL;
     n->c = '\0';
     n->l = NULL;
     n->m = NULL;
     n->r = NULL;
+    n->p = p;
     return n;
 }
 
@@ -34,13 +48,13 @@ TST* TST_init() {
 }
 
 // imagino que quebre se a string for vazia, favor nao ousar
-static node* rec_put(TST *tst, node* t, const char* key, data_type val, data_type *out_val) {
+static node* rec_put(TST *tst, node* t, const char* key, data_type val, data_type *out_val, node *p) {
     const unsigned char c = *key;
-    if (t == NULL) { t = create_node(); t->c = c;}
-    if      (c < t->c) { t->l = rec_put(tst, t->l, key, val, out_val); }
-    else if (c > t->c) { t->r = rec_put(tst, t->r, key, val, out_val); }
+    if (t == NULL) { t = create_node(p); t->c = c;}
+    if      (c < t->c) { t->l = rec_put(tst, t->l, key, val, out_val, t); }
+    else if (c > t->c) { t->r = rec_put(tst, t->r, key, val, out_val, t); }
     else if (key[1] != '\0') {
-        t->m = rec_put(tst, t->m, ++key, val, out_val);
+        t->m = rec_put(tst, t->m, ++key, val, out_val, t);
     }
     else {
         *out_val = t->val;
@@ -51,7 +65,7 @@ static node* rec_put(TST *tst, node* t, const char* key, data_type val, data_typ
 
 data_type TST_put(TST* t, const char* key , data_type val) {
     data_type out_val;
-    node *n = rec_put(t, t->root, key, val, &out_val);
+    node *n = rec_put(t, t->root, key, val, &out_val, NULL);
 
     if (t->root == NULL) {
         t->root = n;
@@ -111,72 +125,42 @@ struct TST_iterator{
     int index;
 };
 
-// Função auxiliar para encontrar o primeiro nó
+// Função auxiliar para encontrar o próximo nó
 // enquanto procura, preenche o buffer com os caracteres
 // Ao mesmo tempo também mantem uma pilha de nós, para poder voltar recursivamente
-static node *rec_find_first(node *n, TST_iterator *iterator){
-    if (n == NULL) {
+static node *find_next(node *t, TST_iterator *iterator, stack_node *sn) {
+    // confere se ha algum char novo para ser inserido
+    if(sn != NULL && sn->c != '\0'){
+        iterator->buffer[iterator->index++] = sn->c;
+    }
+
+    if (t == NULL) {
         return NULL;
     }
 
     // Se o nó atual tiver valor, retorna ele
-    if (n->val != NULL) {
-        // adiciona o '\0' no final do buffer
+    if (t->val != NULL) {
+        // adiciona o caracter no buffer junto do '\0'
+        iterator->buffer[iterator->index++] = t->c;
         iterator->buffer[iterator->index] = '\0';
-        return n;
+        return t;
     }
 
-    // Se não tiver valor, adiciona o caractere no buffer e continua procurando
-    iterator->buffer[iterator->index++] = n->c;
-
-    // Se o nó tiver filho a esquerda, adiciona ele na pilha e continua procurando
-    if (n->l != NULL) {
-        forward_list_push_front(iterator->stack, n->l);
-    }
-
-    // Se o nó tiver filho do meio, adiciona ele na pilha e continua procurando
-    if (n->m != NULL) {
-        forward_list_push_front(iterator->stack, n->m);
-    }
 
     // Se o nó tiver filho a direita, adiciona ele na pilha e continua procurando
-    if (n->r != NULL) {
-        forward_list_push_front(iterator->stack, n->r);
-    }
-
-    // Se a pilha estiver vazia, retorna NULL
-    if (forward_list_is_empty(iterator->stack)) {
-        return NULL;
-    }
-
-    // Se não estiver vazia, pega o primeiro elemento da pilha e continua procurando
-    node *next = forward_list_get_head_value(iterator->stack);
-    forward_list_pop_front(iterator->stack);
-    return rec_find_first(next, iterator);
-}
-
-static node *find_first(node *t, TST_iterator *iterator) {
-    // Reinicia o buffer e a pilha
-    iterator->index = 0;
-    forward_list_destroy(iterator->stack);
-    iterator->stack = forward_list_construct();
-
-    // Começa a procurar
-    return rec_find_first(t, iterator);
-}
-
-// Função auxiliar para encontrar o próximo nó
-// enquanto procura, preenche o buffer com os caracteres
-// Ao mesmo tempo também mantem uma pilha de nós, para poder voltar recursivamente
-static node *find_next(node *t, TST_iterator *iterator) {
-    // Se o nó atual tiver filho do meio, adiciona ele na pilha e continua procurando
-    if (t->m != NULL) {
-        forward_list_push_front(iterator->stack, t->m);
-    }
-
-    // Se o nó atual tiver filho a direita, adiciona ele na pilha e continua procurando
     if (t->r != NULL) {
-        forward_list_push_front(iterator->stack, t->r);
+        forward_list_push_front(iterator->stack, stack_node_construct(t->r, '\0'));
+    }
+    
+    // Se o nó tiver filho do meio, adiciona ele na pilha e continua procurando
+    if (t->m != NULL) {
+        stack_node *sn = stack_node_construct(t->m, t->c);
+        forward_list_push_front(iterator->stack, sn);
+    }
+    
+    // Se o nó tiver filho a esquerda, adiciona ele na pilha e continua procurando
+    if (t->l != NULL) {
+        forward_list_push_front(iterator->stack, stack_node_construct(t->l, '\0'));
     }
 
     // Se a pilha estiver vazia, retorna NULL
@@ -185,9 +169,10 @@ static node *find_next(node *t, TST_iterator *iterator) {
     }
 
     // Se não estiver vazia, pega o primeiro elemento da pilha e continua procurando
-    node *next = forward_list_get_head_value(iterator->stack);
+    stack_node *next = forward_list_get_head_value(iterator->stack);
     forward_list_pop_front(iterator->stack);
-    return find_next(next, iterator);
+
+    return find_next(next->n, iterator, next);
 }
 
 bool TST_iterator_has_next(TST_iterator *iterator) {
@@ -199,12 +184,56 @@ data_type TST_iterator_next(TST_iterator *iterator, char **out_key) {
         //throw("TSTIterator: next: no more elements");
     }
 
-    *out_key = iterator->buffer;
-    data_type *out_val = iterator->current->val;
+    *out_key = strdup(iterator->buffer);
+    data_type out_val = iterator->current->val;
 
-    iterator->current = find_next(iterator->current, iterator);
+    // confere se a palavra atual é uma substring de outra palavra
+    if(iterator->current->m != NULL){
+        node *out = find_next(iterator->current->m, iterator, '\0');
+        if(out != NULL){
+            iterator->current = out;
+            return out_val;
+        }
+    }
+
+    // confere se a lista esta vazia
+    if(forward_list_is_empty(iterator->stack)){
+        iterator->current = NULL;
+        return out_val;
+    }
+
+    // ve qual o proximo node a ser visitado
+    stack_node *next = forward_list_get_head_value(iterator->stack);
+    forward_list_pop_front(iterator->stack);
+
+    node *current = iterator->current;
+
+    // vai retirando os caracteres do buffer ate chegar no node que tem o proximo node a ser visitado
+    while(current != NULL){
+        if(current->r == next->n || current->l == next->n || current->m == next->n){
+            if(current->r == next->n || current->l == next->n){
+                iterator->buffer[--iterator->index] = '\0';
+            }
+            iterator->current = next->n;
+            break;
+        }
+
+        iterator->buffer[--iterator->index] = '\0';
+        current = current->p;
+    }
+
+    iterator->current = find_next(next->n, iterator, next);
 
     return out_val;
+}
+
+static node *find_first(node *t, TST_iterator *iterator) {
+    // Reinicia o buffer e a pilha
+    iterator->index = 0;
+    iterator->stack = forward_list_construct();
+
+    // Começa a procurar
+    return find_next(t, iterator, stack_node_construct(t, '\0'));
 }
 
 // inicializar o iterador
