@@ -101,16 +101,17 @@ int TST_size(TST* t) {
     return t->size;
 }
 
-static void rec_free(node* t) {
+static void rec_free(node* t, free_fn free_fn) {
     if (t == NULL) { return; }
-    rec_free(t->l);
-    rec_free(t->m);
-    rec_free(t->r);
-        free(t);
+    rec_free(t->l, free_fn);
+    rec_free(t->m, free_fn);
+    rec_free(t->r, free_fn);
+    if (t->val != NULL) { free_fn(t->val); }
+    free(t);
 }
 
-void TST_free(TST* t) {
-    rec_free(t->root);
+void TST_free(TST* t, free_fn free_fn) {
+    rec_free(t->root, free_fn);
     free(t);
 }
 
@@ -128,10 +129,15 @@ struct TST_iterator{
 // Função auxiliar para encontrar o próximo nó
 // enquanto procura, preenche o buffer com os caracteres
 // Ao mesmo tempo também mantem uma pilha de nós, para poder voltar recursivamente
-static node *find_next(node *t, TST_iterator *iterator, stack_node *sn) {
+static node *find_next(TST_iterator *iterator, stack_node *sn) {
+    // libera o stack_node
+    node *t = sn->n;
+    char sn_char = sn->c;
+    free(sn);
+
     // confere se ha algum char novo para ser inserido
-    if(sn != NULL && sn->c != '\0'){
-        iterator->buffer[iterator->index++] = sn->c;
+    if(sn_char != '\0'){
+        iterator->buffer[iterator->index++] = sn_char;
     }
 
     if (t == NULL) {
@@ -172,7 +178,7 @@ static node *find_next(node *t, TST_iterator *iterator, stack_node *sn) {
     stack_node *next = forward_list_get_head_value(iterator->stack);
     forward_list_pop_front(iterator->stack);
 
-    return find_next(next->n, iterator, next);
+    return find_next(iterator, next);
 }
 
 bool TST_iterator_has_next(TST_iterator *iterator) {
@@ -189,7 +195,7 @@ data_type TST_iterator_next(TST_iterator *iterator, char **out_key) {
 
     // confere se a palavra atual é uma substring de outra palavra
     if(iterator->current->m != NULL){
-        node *out = find_next(iterator->current->m, iterator, '\0');
+        node *out = find_next(iterator, stack_node_construct(iterator->current->m, '\0'));
         if(out != NULL){
             iterator->current = out;
             return out_val;
@@ -222,7 +228,7 @@ data_type TST_iterator_next(TST_iterator *iterator, char **out_key) {
         current = current->p;
     }
 
-    iterator->current = find_next(next->n, iterator, next);
+    iterator->current = find_next(iterator, next);
 
     return out_val;
 }
@@ -233,7 +239,7 @@ static node *find_first(node *t, TST_iterator *iterator) {
     iterator->stack = forward_list_construct();
 
     // Começa a procurar
-    return find_next(t, iterator, stack_node_construct(t, '\0'));
+    return find_next(iterator, stack_node_construct(t, '\0'));
 }
 
 // inicializar o iterador
@@ -251,6 +257,8 @@ TST_iterator* TST_iterator_init(TST *tst) {
 
 // Função auxiliar para destruir o iterador
 void TST_iterator_free(TST_iterator *iterator) {
+    free(iterator->buffer);
+    forward_list_destroy(iterator->stack);
     free(iterator);
 }
 
@@ -260,6 +268,8 @@ void TST_traverse(TST *tst, void (*visit)(char *, data_type)) {
         char *key;
         data_type val = TST_iterator_next(iterator, &key);
         visit(key, val);
+        free(key);
     }
     TST_iterator_free(iterator);
 }
+

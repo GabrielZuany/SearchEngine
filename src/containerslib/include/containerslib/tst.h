@@ -8,7 +8,7 @@ typedef struct TST TST;
 TST* TST_init();
 data_type TST_put(TST* self, const char* key, data_type val);
 data_type TST_search(TST* self, char* key);
-void TST_free(TST* self);
+void TST_free(TST* self, free_fn free_fn);
 int TST_empty(TST* self);
 int TST_size(TST* self);
 
