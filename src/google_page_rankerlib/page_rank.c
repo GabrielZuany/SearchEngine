@@ -125,7 +125,7 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     self->tst_in = tst_in;
 
     fclose(graph_file);
-    free(filename);
+    /* free(filename); */
     free(n_links);
     
     return self;
@@ -173,6 +173,7 @@ void __init_page_rank(PageRank* self) {
             Node* in_links_node = forward_list_get_head_node(in_links[i]);  // set of pages that link to page i
             while(in_links_node != NULL){                                   // for each document j in In(i) loop
                 char* document = (char*)node_get_value(in_links_node);
+                if(document == NULL){ continue; }
                 int j = *(int*)stringst_get(self->tst_out, document);       // get list id of document j
                 int out_j_size = forward_list_size(out_links[j]);           // get number of outlinks in document j
                 sum += page_rank_k_1[j] / (double)out_j_size;

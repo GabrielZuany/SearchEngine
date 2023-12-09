@@ -345,7 +345,7 @@ void *rbtree_iterator_next(RbTreeIterator *iterator, void **out_key) {
 
 // inicializar o iterador
 RbTreeIterator* rbtree_iterator_init(RbTree *rbtree) {
-    RbTreeIterator *iterator = malloc(sizeof(*iterator));
+    RbTreeIterator *iterator = calloc(sizeof(*iterator), 1);
 
     iterator->rbtree = rbtree;
     iterator->stack = forward_list_construct();
