@@ -116,7 +116,7 @@ void stringst_traverse(StringSt *self, void (*visit)(char *,  void *)) {
 }
 
 // Clean up the table memory.
-void stringst_finish(StringSt *self) {
-    TST_free(self->tst);
+void stringst_finish(StringSt *self, free_fn free_fn) {
+    TST_free(self->tst, free_fn);
     free(self);
 }

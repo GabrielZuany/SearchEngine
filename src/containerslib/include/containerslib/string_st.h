@@ -45,6 +45,6 @@ void stringst_iterator_finish(StringStIterator* self);
 void stringst_traverse(StringSt *self, void (*visit)(char *,  void *));
 
 // Clean up the table memory.
-void stringst_finish(StringSt *self);
+void stringst_finish(StringSt *self, free_fn free_fn);
 
 #endif

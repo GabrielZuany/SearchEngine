@@ -114,9 +114,9 @@ static void __index_finish_stringset(char *key, void *value)
 void index_finish(Index *index)
 {
     stringst_traverse(index->word_idspageset_map, __index_finish_stringset);
-    stringst_finish(index->word_idspageset_map);
+    stringst_finish(index->word_idspageset_map, free);
 
-    stringst_finish(index->page_idpage_map);
+    stringst_finish(index->page_idpage_map, free);
 
     for (size_t i = 0; i < index->len; i++)
         free(index->idpage_page_map[i]);

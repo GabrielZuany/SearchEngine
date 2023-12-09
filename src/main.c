@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     free(pages_folder_path);
     free(stop_words_path);
 
-    stringset_finish(stop_words);
+    stringset_finish(stop_words, free);
 
     index_finish(index);
 

@@ -40,8 +40,8 @@ void page_rank_finish(PageRank* self){
     free(self->out_links);
     free(self->in_links);
     free(self->page_rank);
-    stringst_finish(self->tst_out);
-    stringst_finish(self->tst_in);
+    stringst_finish(self->tst_out, free);
+    stringst_finish(self->tst_in, free);
     free(self);
 }
 
