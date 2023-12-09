@@ -349,7 +349,8 @@ RbTreeIterator* rbtree_iterator_init(RbTree *rbtree) {
 
     iterator->rbtree = rbtree;
     iterator->stack = forward_list_construct();
-    if(rbtree != NULL)
+    forward_list_push_front(iterator->stack, rbtree->root);
+    if(rbtree != NULL && rbtree->root != NULL)
         iterator->current = __find_min(rbtree->root, iterator->stack);
 
     return iterator;
