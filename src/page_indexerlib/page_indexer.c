@@ -46,7 +46,7 @@ Index *pageindexer_create(const char *index_path, const char *pages_folder_path,
         __pageindexer_index_page(strdup_page_name, len, pages_folder_path, stop_words, word_idspageset_map);
     }
 
-    free(page_name);
+    /* free(page_name); */
     fclose(index_file);
 
     Index *index = index_init(word_idspageset_map, page_idpage_map, idpage_page_map, len, size, stop_words);
@@ -73,7 +73,7 @@ StringSet *pageindexer_read_stop_words(const char *stop_words_path) {
         stringset_put(stop_words, stop_word);
     }
 
-    free(stop_word);
+    /* free(stop_word); */
     fclose(stop_words_file);
 
     return stop_words;
@@ -100,7 +100,7 @@ static inline void __pageindexer_index_page(char *page_name, size_t page_id, con
         __pageindexer_index_page_line(line, stop_words, word_idspageset_map, page_id);
     }
 
-    free(line);
+    /* free(line); */
     fclose(page_file);
 }
 

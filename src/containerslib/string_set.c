@@ -4,25 +4,28 @@
 #include "containerslib/string_set.h"
 #include "containerslib/tst.h"
 #include "containerslib/exceptions.h"
+#include "containerslib/rbtree.h"
+#include "containerslib/types.h"
 
 struct StringSet {
-    TST *tst;
+    RbTree *tst;
 };
 
 StringSet *stringset_init() {
     StringSet *self = malloc(sizeof(*self));
 
-    self->tst = TST_init();
+    self->tst = rbtree_init((cmp_fn)strcmp);
 
     return self;
 }
 
 bool stringset_put(StringSet *self, const char *key) {
-    return TST_put(self->tst, key, self) != NULL;
+    void *replaced_val = rbtree_put(self->tst, (void *)key, self, &replaced_val);
+    return replaced_val != NULL;
 }
 
 bool stringset_contains(StringSet *self, char *key) {
-    return TST_search(self->tst, key) != NULL;
+    return rbtree_contains(self->tst, key);
 }
 
 void stringset_delete(StringSet *self, char *key) {
@@ -33,36 +36,36 @@ void stringset_delete(StringSet *self, char *key) {
 
 // Is the table empty?
 bool stringset_empty(StringSet *self) {
-    return TST_empty(self->tst);
+    return rbtree_empty(self->tst);
 }
 
 // Number of key-value pairs in the table.
 int stringset_size(StringSet *self) {
-    return TST_size(self->tst);
+    return rbtree_size(self->tst);
 }
 
 struct StringSetIterator {
-    TST_iterator *iterator;
+    RbTreeIterator *iterator;
 };
 
 StringSetIterator* stringset_iterator_init(StringSet* self) {
     StringSetIterator *iterator = malloc(sizeof(*iterator));
-    iterator->iterator = TST_iterator_init(self->tst);
+    iterator->iterator = rbtree_iterator_init(self->tst);
     return iterator;
 }
 
 bool stringset_iterator_has_next(StringSetIterator *self) {
-    return TST_iterator_has_next(self->iterator);
+    return rbtree_iterator_has_next(self->iterator);
 }
 
 char *stringset_iterator_next(StringSetIterator *self) {
     char *out_key;
-    TST_iterator_next(self->iterator, &out_key);
+    rbtree_iterator_next(self->iterator, (void *)&out_key);
     return out_key;
 }
 
 void stringset_iterator_finish(StringSetIterator* self) {
-    TST_iterator_free(self->iterator);
+    rbtree_iterator_free(self->iterator);
     free(self);
 }
 
@@ -75,6 +78,6 @@ void stringset_traverse(StringSet *self, void (*visit)(char *)) {
 
 // Clean up the table memory.
 void stringset_finish(StringSet *self) {
-    TST_free(self->tst);
+    rbtree_finish(self->tst);
     free(self);
 }

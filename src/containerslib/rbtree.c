@@ -3,6 +3,8 @@
 
 #include "containerslib/rbtree.h"
 
+#include <stdio.h>
+
 struct _RbNode
 {
     void *key;
@@ -347,7 +349,8 @@ RbTreeIterator* rbtree_iterator_init(RbTree *rbtree) {
 
     iterator->rbtree = rbtree;
     iterator->stack = forward_list_construct();
-    iterator->current = __find_min(rbtree->root, iterator->stack);
+    if(rbtree != NULL)
+        iterator->current = __find_min(rbtree->root, iterator->stack);
 
     return iterator;
 }

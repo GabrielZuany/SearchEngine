@@ -1,36 +1,38 @@
 #include <string.h>
 
+#include "containerslib/rbtree.h"
 #include "containerslib/tst.h"
 #include "containerslib/string_st.h"
 #include "containerslib/exceptions.h"
 
 struct StringSt {
-    TST *tst;
+    RbTree *tst;
 };
 
 // Create an empty symbol table.
 StringSt *stringst_init() {
     StringSt *self = malloc(sizeof(*self));
 
-    self->tst = TST_init((cmp_fn)strcmp);
+    self->tst = rbtree_init((cmp_fn)strcmp);
 
     return self;
 }
 
 // Put key-value pair into the table: a[key] = val; .
 void *stringst_put(StringSt *self, char *key, void *val) {
-    void *replaced_val = TST_put(self->tst, key, val);
+    void *replaced_val = rbtree_put(self->tst, key, val, &replaced_val);
     return replaced_val;
 }
 
 // Value paired with key: a[key] .
 void *stringst_get(StringSt *self, char *key) {
-    return TST_search(self->tst, key);
+    void *out_key = rbtree_get(self->tst, key, &out_key);
+    return out_key;
 }
 
 // Is there a value paired with key?
 bool stringst_contains(StringSt *self, char *key) {
-    return TST_search(self->tst, key) != NULL;
+    return rbtree_contains(self->tst, key);
 }
 
 // Remove key (and its value) from table.
@@ -43,7 +45,7 @@ bool stringst_contains(StringSt *self, char *key) {
 
 // Is the table empty?
 bool stringst_empty(StringSt *self) {
-    return TST_empty(self->tst);
+    return rbtree_empty(self->tst);
 }
 
 // Number of key-value pairs in the table.
@@ -86,35 +88,35 @@ bool stringst_empty(StringSt *self) {
 /* } */
 
 struct StringStIterator {
-    TST_iterator *iterator;
+    RbTreeIterator *iterator;
 };
 
 StringStIterator *stringst_iterator_init(StringSt* self) {
     StringStIterator *iterator = malloc(sizeof(*iterator));
-    iterator->iterator = TST_iterator_init(self->tst);
+    iterator->iterator = rbtree_iterator_init(self->tst);
     return iterator;
 }
 
 bool stringst_iterator_has_next(StringStIterator *iterator) {
-    return TST_iterator_has_next(iterator->iterator);
+    return rbtree_iterator_has_next(iterator->iterator);
 }
 
 void *stringst_iterator_next(StringStIterator *self, char **out_key) {
-    return TST_iterator_next(self->iterator, out_key);
+    return rbtree_iterator_next(self->iterator, (void *)out_key);
 }
 
 void stringst_iterator_finish(StringStIterator* self) {
-    TST_iterator_free(self->iterator);
+    rbtree_iterator_free(self->iterator);
     free(self);
 }
 
 // Visit all the key-value pairs in the order of their keys.
 void stringst_traverse(StringSt *self, void (*visit)(char *,  void *)) {
-    TST_traverse(self->tst, visit);
+    /* rbtree_traverse(self->tst, visit); */
 }
 
 // Clean up the table memory.
 void stringst_finish(StringSt *self) {
-    TST_free(self->tst);
+    rbtree_finish(self->tst);
     free(self);
 }
