@@ -106,7 +106,7 @@ static void rec_free(node* t) {
     rec_free(t->l);
     rec_free(t->m);
     rec_free(t->r);
-    free(t);
+        free(t);
 }
 
 void TST_free(TST* t) {
@@ -251,7 +251,6 @@ TST_iterator* TST_iterator_init(TST *tst) {
 
 // Função auxiliar para destruir o iterador
 void TST_iterator_free(TST_iterator *iterator) {
-    free(iterator->buffer);
     free(iterator);
 }
 
