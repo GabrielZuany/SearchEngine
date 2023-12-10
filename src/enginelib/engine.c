@@ -13,9 +13,9 @@ void engine_run(Index *index, PageRank *page_rank, FILE *in, FILE *out) {
 
         fprintf(out, "pages:");
         double prs[results];
-        char *page;
         for (long long int i = 0; i < results; i++)
         {
+            char *page;
             prs[i] = heap_pop(ranking, &page);
 
             fprintf(out, "%s ", page);

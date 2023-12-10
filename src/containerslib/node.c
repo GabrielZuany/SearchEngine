@@ -24,9 +24,6 @@ Node *node_get_next(Node *n){
 }
 
 void node_destroy(Node *n){
-    if (n != NULL && n->value != NULL){
-        free(n->value);
-    }
     free(n);
 }
 

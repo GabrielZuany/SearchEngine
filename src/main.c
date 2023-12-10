@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
     Index *index = pageindexer_create(index_path, pages_folder_path, stop_words);
 
     PageRank* page_rank = page_rank_init(index);
-    page_rank_build_links(page_rank, input_directory);
+    page_rank_build_links(page_rank, input_directory, graph_path);
 
     engine_run(index, page_rank, stdin, stdout);
 
@@ -36,9 +36,10 @@ int main(int argc, char *argv[]) {
     free(pages_folder_path);
     free(stop_words_path);
 
-    /* stringset_finish(stop_words, free); */
+    stringset_finish(stop_words, NULL);
 
-    /* index_finish(index); */
+    index_finish(index);
+    page_rank_finish(page_rank);
 
     return 0;
 }
