@@ -60,7 +60,7 @@ long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Sear
     }
     stringset_iterator_finish(iterator);
 
-    stringset_finish(pages, free);
+    /* stringset_finish(pages, free); */
 
     return (long long int)heap_len(out->heap_pr_page);
 }

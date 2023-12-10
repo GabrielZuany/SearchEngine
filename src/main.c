@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 
     char *input_directory = argv[1];
 
-    char* graph_path = utils_pathcat(input_directory, "graph.txt");
+    char *graph_path = utils_pathcat(input_directory, "graph.txt");
     char *index_path = utils_pathcat(input_directory, "index.txt");
     char *pages_folder_path = utils_pathcat(input_directory, "pages/");
     char *stop_words_path = utils_pathcat(input_directory, "stopwords.txt");
@@ -26,9 +26,8 @@ int main(int argc, char *argv[]) {
     StringSet *stop_words = pageindexer_read_stop_words(stop_words_path);
     Index *index = pageindexer_create(index_path, pages_folder_path, stop_words);
 
-    size_t n_pages = index_get_num_pages(index);
-    PageRank* page_rank = page_rank_init(n_pages);
-    page_rank_build_links(page_rank, graph_path);
+    PageRank* page_rank = page_rank_init(index);
+    page_rank_build_links(page_rank, input_directory);
 
     engine_run(index, page_rank, stdin, stdout);
 
