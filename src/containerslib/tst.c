@@ -10,7 +10,7 @@ typedef struct node node;
 struct node {
     data_type val;
     unsigned char c;
-    struct node *l, *m, *r, *p;
+    struct node *l, *m, *r;
 };
 
 struct TST {
@@ -18,26 +18,13 @@ struct TST {
     int size;
 };
 
-typedef struct{
-    node *n;
-    char c;
-}stack_node;
-
-static stack_node* stack_node_construct(node *n, char c){
-    stack_node *sn = malloc(sizeof(*sn));
-    sn->n = n;
-    sn->c = c;
-    return sn;
-}
-
-static node* create_node(node *p) {
+static node* create_node() {
     node* n = malloc(sizeof(*n));
     n->val = NULL;
     n->c = '\0';
     n->l = NULL;
     n->m = NULL;
     n->r = NULL;
-    n->p = p;
     return n;
 }
 
@@ -48,13 +35,13 @@ TST* TST_init() {
 }
 
 // imagino que quebre se a string for vazia, favor nao ousar
-static node* rec_put(TST *tst, node* t, const char* key, data_type val, data_type *out_val, node *p) {
+static node* rec_put(TST *tst, node* t, const char* key, data_type val, data_type *out_val) {
     const unsigned char c = *key;
-    if (t == NULL) { t = create_node(p); t->c = c;}
-    if      (c < t->c) { t->l = rec_put(tst, t->l, key, val, out_val, t); }
-    else if (c > t->c) { t->r = rec_put(tst, t->r, key, val, out_val, t); }
+    if (t == NULL) { t = create_node(); t->c = c;}
+    if      (c < t->c) { t->l = rec_put(tst, t->l, key, val, out_val); }
+    else if (c > t->c) { t->r = rec_put(tst, t->r, key, val, out_val); }
     else if (key[1] != '\0') {
-        t->m = rec_put(tst, t->m, ++key, val, out_val, t);
+        t->m = rec_put(tst, t->m, ++key, val, out_val);
     }
     else {
         *out_val = t->val;
@@ -65,7 +52,7 @@ static node* rec_put(TST *tst, node* t, const char* key, data_type val, data_typ
 
 data_type TST_put(TST* t, const char* key , data_type val) {
     data_type out_val;
-    node *n = rec_put(t, t->root, key, val, &out_val, NULL);
+    node *n = rec_put(t, t->root, key, val, &out_val);
 
     if (t->root == NULL) {
         t->root = n;
@@ -121,65 +108,96 @@ void TST_free(TST* t, free_fn free_fn) {
 struct TST_iterator{
     TST *tst;
     ForwardList *stack; // List<Node>
-    node *current;
 
     char *buffer;
     size_t buf_index;
     size_t buf_capacity;
 };
 
-bool TST_iterator_has_next(TST_iterator *iterator) {
-    return iterator->current != NULL;
-}
-
-data_type TST_iterator_next(TST_iterator *iterator, char **out_key) {
-    if (iterator->current == NULL) return NULL;
-
-    node *n = iterator->current;
-
-    while (n->m != NULL) {
-        forward_list_push_head(iterator->stack, stack_node_construct(n->m, n->c));
-        n = n->m;
+static void __TST_iterator_buffer_append(TST_iterator *iterator, char c) {
+    if (iterator->buf_index == iterator->buf_capacity) {
+        iterator->buf_capacity *= 2;
+        iterator->buffer = realloc(iterator->buffer, iterator->buf_capacity * sizeof(char));
     }
 
-    iterator->buf_index = 0;
-    while (iterator->stack->len > 0) {
-        stack_node *sn = forward_list_pop_head(iterator->stack);
-        iterator->buffer[iterator->buf_index++] = sn->c;
-        n = sn->n;
-        free(sn);
-
-        while (n->l != NULL) {
-            forward_list_push_head(iterator->stack, stack_node_construct(n->l, '\0'));
-            n = n->l;
-        }
-
-        if (n->val != NULL) {
-            iterator->current = n;
-            iterator->buffer[iterator->buf_index] = '\0';
-            *out_key = iterator->buffer;
-            return n->val;
-        }
-    }
-
-    iterator->current = NULL;
-    return NULL;
+    iterator->buffer[iterator->buf_index++] = c;
+    iterator->buffer[iterator->buf_index] = '\0';
 }
 
-static __TST_iterator_find_leftest(node *n, TST_iterator *iterator) {
-    if (n == NULL) return NULL;
+static void __TST_iterator_buffer_pop(TST_iterator *iterator) {
+    iterator->buffer[--iterator->buf_index] = '\0';
+}
+
+static void __TST_iterator_find_leftest(TST_iterator *iterator, node *n) {
+    if (n == NULL) return;
 
     forward_list_push_front(iterator->stack, n);
 
-    while (n->l != NULL) {
-        forward_list_push_front(iterator->stack, n->l);
-        n = n->l;
+    node *curr = n;
+    while (curr->l != NULL) {
+        if (curr->r != NULL)
+            forward_list_push_front(iterator->stack, curr->r);
+
+        if (curr->m != NULL)
+            forward_list_push_front(iterator->stack, curr->m);
+
+        forward_list_push_front(iterator->stack, curr->l);
+
+        curr = curr->l;
     }
 
-    // TODO: parei aqui
-    
+    if (curr->r != NULL)
+        forward_list_push_front(iterator->stack, curr->r);
 
-    return n;
+    __TST_iterator_buffer_append(iterator, curr->c);
+    // como essa TST nao tem delete, seguramente há um nó no meio, ou curr e um no terminal
+    __TST_iterator_find_leftest(iterator, curr->m);
+}
+
+bool TST_iterator_has_next(TST_iterator *iterator) {
+    return forward_list_size(iterator->stack) > 0;
+}
+
+data_type TST_iterator_next(TST_iterator *iterator, char **out_key) {
+    node *last = forward_list_pop_front(iterator->stack);
+    *out_key = strdup(iterator->buffer);
+    __TST_iterator_buffer_pop(iterator);
+
+    while (forward_list_size(iterator->stack) > 0) {
+        node *nhead = forward_list_get_head_value(iterator->stack);
+        __TST_iterator_buffer_pop(iterator);
+
+        if (nhead->m != last && (nhead->l == last || nhead->r == last)) { // de um filho lateral para o pai
+            __TST_iterator_buffer_append(iterator, nhead->c);
+        }
+        else if (nhead->m != last && nhead->l != last && nhead->r != last) { // de um filho lateral para o irmao
+            forward_list_pop_front(iterator->stack);
+
+            node *nnhead = forward_list_get_head_value(iterator->stack);
+            node *nnnhead = forward_list_get(iterator->stack, 1);
+
+            if (nhead == nnhead->m)                                // se for o irmao do meio
+                __TST_iterator_buffer_append(iterator, nnhead->c);
+            else if (nhead == nnnhead->m)                          // se for o irmao do meio, mas o proximo era o irmao da direita
+                __TST_iterator_buffer_append(iterator, nnnhead->c);
+            else if (last == nnhead->m)                            // se for o irmao da direita e o anterior era o irmao do meio
+                __TST_iterator_buffer_pop(iterator);
+
+            __TST_iterator_find_leftest(iterator, nhead);
+            break;
+        }
+
+        if (nhead->val != NULL) {
+            if (nhead->m == last || (nhead->l != last && nhead->r != last)) // de morgan hii
+                __TST_iterator_buffer_append(iterator, nhead->c);
+
+            break;
+        }
+
+        last = forward_list_pop_front(iterator->stack);
+    }
+
+    return last->val;
 }
 
 // inicializar o iterador
@@ -187,13 +205,13 @@ TST_iterator* TST_iterator_init(TST *tst) {
     TST_iterator *iterator = malloc(sizeof(*iterator));
 
     iterator->tst = tst;
-    iterator->stack = forward_list_init();
+    iterator->stack = forward_list_construct();
 
     iterator->buf_capacity = 16;
     iterator->buf_index = 0;
     iterator->buffer = malloc(iterator->buf_capacity * sizeof(char));
 
-    iterator->current = __TST_iterator_find_leftest(tst->root, iterator);
+    __TST_iterator_find_leftest(iterator, tst->root);
 
     return iterator;
 }

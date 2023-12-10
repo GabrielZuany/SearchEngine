@@ -49,12 +49,12 @@ static char *__index_get_page_from_pageid(Index *index, size_t page_id)
     return index->idpage_page_map[page_id - 1];
 }
 
-static size_t __index_get_pageid_from_pagename(Index *index, char *page_name)
+/* static size_t __index_get_pageid_from_pagename(Index *index, char *page_name)
 {
     size_t *page_id = stringst_get(index->page_idpage_map, page_name);
 
     return (size_t)page_id;
-}
+} */
 
 StringSet *index_intersect_pages(Index *index, StringSet *words) {
     StringSet *pages = stringset_init(); // Set<string>
