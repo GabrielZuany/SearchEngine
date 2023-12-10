@@ -82,12 +82,16 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
     size_t page_id = 0;
     size_t page_count = 0;
     size_t num_words = heap_len(heap);
+    bool about_finish = false;
     while (heap_len(heap) > 0) {
         SetIterator *curr_iter;
         size_t curr_page_id = heap_pop(heap, &curr_iter);
         if (page_id != curr_page_id) {
             page_id = curr_page_id;
             page_count = 1;
+
+            if (about_finish)
+                break;
         } else {
             page_count++;
         }
@@ -102,7 +106,7 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
         if (set_iterator_has_next(curr_iter))
             heap_push(heap, &curr_iter, (size_t)set_iterator_next(curr_iter));
         else
-            break;
+            about_finish = true;
     }
     heap_free(heap);
 

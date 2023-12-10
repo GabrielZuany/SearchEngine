@@ -38,10 +38,10 @@ long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Sear
 
     out->query = query;
     // TODO: extract PR given pages
-    out->heap_pr_page = heap_init(MAX_HEAP, 16, sizeof(char *), (free_fn)free);
+    out->heap_pr_page = heap_init(MAX_HEAP, 16, sizeof(char *), NULL);
     StringSetIterator *iterator = stringset_iterator_init(pages);
     while (stringset_iterator_has_next(iterator)) {
-        char *page = stringset_iterator_next(iterator);
+        char *page = strdup(stringset_iterator_next(iterator));
         double pr = page_rank_get_rank(page_rank, page);
         heap_push(out->heap_pr_page, &page, pr);
     }

@@ -75,8 +75,10 @@ static void __page_rank_linker(char **pages, StringSt *out_links_qty, StringSt *
                 stringst_put(in_links, token, curr_page_in_links);
             }
 
-            forward_list_push_front(curr_page_in_links, origin_page_name);
+            forward_list_push_front(curr_page_in_links, strdup(origin_page_name));
         }
+
+        free(origin_page_name);
     }
     free(vertex_adj);
     fclose(graph_file);
@@ -86,7 +88,7 @@ static void __page_rank_linker(char **pages, StringSt *out_links_qty, StringSt *
     while (stringset_iterator_has_next(iterator)) {
         char *key = stringset_iterator_next(iterator);
         
-        pages[curr++] = key;
+        pages[curr++] = strdup(key);
     }
     stringset_iterator_finish(iterator);
 
