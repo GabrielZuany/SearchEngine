@@ -25,6 +25,8 @@ long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Sear
 
     utils_inplacestrtolower(query);
 
+    out->query = strdup(query);
+
     StringSet *words = stringset_init();
 
     const char delim[] = " ";
@@ -36,12 +38,12 @@ long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Sear
 
         stringset_put(words, token);
     }
+    free(query);
 
     StringSet *pages = index_intersect_pages(index, words);
 
     stringset_finish(words, NULL);
 
-    out->query = query;
     // TODO: extract PR given pages
     out->heap_pr_page = heap_init(MAX_HEAP, 16, sizeof(char *), (free_fn)free);
     StringSetIterator *iterator = stringset_iterator_init(pages);
