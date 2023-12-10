@@ -56,10 +56,15 @@ static size_t __index_get_pageid_from_pagename(Index *index, char *page_name)
     return (size_t)page_id;
 }
 
+static void __index_intersect_pages_heap_derrefed_free_fn(SetIterator **set)
+{
+    set_iterator_finish(*set);
+}
+
 StringSet *index_intersect_pages(Index *index, StringSet *words) {
     StringSet *pages = stringset_init(); // Set<string>
 
-    Heap *heap = heap_init(MIN_HEAP, 2, __SIZEOF_POINTER__, (free_fn)set_iterator_finish);
+    Heap *heap = heap_init(MIN_HEAP, 2, __SIZEOF_POINTER__, (free_fn)__index_intersect_pages_heap_derrefed_free_fn);
 
     StringSetIterator *iterator = stringset_iterator_init(words);
     while (stringset_iterator_has_next(iterator)) {
@@ -100,10 +105,13 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
 
         if (set_iterator_has_next(curr_iter))
             heap_push(heap, &curr_iter, (size_t)set_iterator_next(curr_iter));
-        else
+        else {
+            set_iterator_finish(curr_iter);
             break;
+        }
+
     }
-    /* heap_free(heap); */
+    heap_free(heap);
 
     return pages;
 }

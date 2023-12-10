@@ -195,7 +195,7 @@ size_t heap_len(Heap *self) {
 void heap_free(Heap *self) {
     if (self->freer)
         for (size_t i = 1; i <= self->len; i++)
-            self->freer(((byte **)self->data)[i * self->smemb]);
+            self->freer(self->data + (i * self->smemb));
 
     free(self->data);
     free(self->priorities);
