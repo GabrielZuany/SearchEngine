@@ -106,7 +106,7 @@ static void rec_free(node* t, free_fn free_fn) {
     rec_free(t->l, free_fn);
     rec_free(t->m, free_fn);
     rec_free(t->r, free_fn);
-    if (t->val != NULL) { free_fn(t->val); }
+    // if (t->val != NULL) { free_fn(t->val); }
     free(t);
 }
 

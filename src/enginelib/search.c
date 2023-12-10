@@ -24,14 +24,27 @@ long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Sear
 
     StringSet *words = stringset_init();
 
+    // const char delim[] = " ";
+    // char *saveptr = NULL, *token = NULL;
+    // for (token = query;; token = NULL) {
+    //     token = strtok_r(token, delim, &saveptr);
+    //     if (token == NULL)
+    //         break;
+
+    //     stringset_put(words, strdup(token));
+    // }
+
     const char delim[] = " ";
-    char *saveptr = NULL, *token = NULL;
-    for (token = query;; token = NULL) {
+    char* saveptr = NULL, *token = malloc(sizeof(char) * (strlen(query) + 1));
+    strcpy(token, query);
+    /* for (token = strcpy(query, token);; token = NULL) { */
+    while (1) {
         token = strtok_r(token, delim, &saveptr);
         if (token == NULL)
             break;
 
         stringset_put(words, token);
+        token = NULL;
     }
 
     StringSet *pages = index_intersect_pages(index, words);
