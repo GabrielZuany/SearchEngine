@@ -106,11 +106,12 @@ static void rec_free(node* t, free_fn free_fn) {
     rec_free(t->l, free_fn);
     rec_free(t->m, free_fn);
     rec_free(t->r, free_fn);
-    // if (t->val != NULL) { free_fn(t->val); }
+    if (t != NULL && t->val != NULL && free_fn != NULL) { free_fn(t->val); }
     free(t);
 }
 
 void TST_free(TST* t, free_fn free_fn) {
+    if (t == NULL) { return; }
     rec_free(t->root, free_fn);
     free(t);
 }
