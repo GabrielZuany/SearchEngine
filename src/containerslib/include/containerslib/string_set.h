@@ -22,6 +22,6 @@ char *stringset_iterator_next(StringSetIterator *self);
 void stringset_iterator_finish(StringSetIterator* self);
 void stringset_traverse(StringSet *self, void (*visit)(char *));
 
-void stringset_finish(StringSet *self, free_fn free_fn);
+void stringset_finish(StringSet *self);
 
 #endif

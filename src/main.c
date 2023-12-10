@@ -25,13 +25,7 @@ int main(int argc, char *argv[]) {
     StringSet *stop_words = pageindexer_read_stop_words(stop_words_path);
     Index *index = pageindexer_create(index_path, pages_folder_path, stop_words);
 
-    int n_pages = 0;
-    PageRank* page_rank = page_rank_init(n_pages);
-    page_rank_build_links(page_rank, graph_path);
-    double page_rank_value = page_rank_get(page_rank, 0);
-
-    // TODO remove
-    if (page_rank_value) {}; // warning suppression hihiih
+    PageRank* page_rank = page_rank_build(index_get_num_pages(index), graph_path);
 
     engine_run(index, page_rank, stdin, stdout);
 
@@ -40,7 +34,7 @@ int main(int argc, char *argv[]) {
     free(pages_folder_path);
     free(stop_words_path);
 
-    stringset_finish(stop_words, free);
+    stringset_finish(stop_words);
 
     index_finish(index);
 

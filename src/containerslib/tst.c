@@ -106,7 +106,7 @@ static void rec_free(node* t, free_fn free_fn) {
     rec_free(t->l, free_fn);
     rec_free(t->m, free_fn);
     rec_free(t->r, free_fn);
-    if (t->val != NULL) { free_fn(t->val); }
+    if (t->val != NULL && free_fn != NULL) { free_fn(t->val); }
     free(t);
 }
 
@@ -120,137 +120,80 @@ void TST_free(TST* t, free_fn free_fn) {
 // Definindo a estrutura do iterador
 struct TST_iterator{
     TST *tst;
-    ForwardList *stack;
-    char *buffer;
+    ForwardList *stack; // List<Node>
     node *current;
-    int index;
+
+    char *buffer;
+    size_t buf_index;
+    size_t buf_capacity;
 };
-
-// Função auxiliar para encontrar o próximo nó
-// enquanto procura, preenche o buffer com os caracteres
-// Ao mesmo tempo também mantem uma pilha de nós, para poder voltar recursivamente
-static node *find_next(TST_iterator *iterator, stack_node *sn) {
-    // libera o stack_node
-    node *t = sn->n;
-    char sn_char = sn->c;
-    free(sn);
-
-    // confere se ha algum char novo para ser inserido
-    if(sn_char != '\0'){
-        iterator->buffer[iterator->index++] = sn_char;
-    }
-
-    if (t == NULL) {
-        return NULL;
-    }
-
-    // Se o nó atual tiver valor, retorna ele
-    if (t->val != NULL) {
-        // adiciona o caracter no buffer junto do '\0'
-        iterator->buffer[iterator->index++] = t->c;
-        iterator->buffer[iterator->index] = '\0';
-        return t;
-    }
-
-
-    // Se o nó tiver filho a direita, adiciona ele na pilha e continua procurando
-    if (t->r != NULL) {
-        forward_list_push_front(iterator->stack, stack_node_construct(t->r, '\0'));
-    }
-    
-    // Se o nó tiver filho do meio, adiciona ele na pilha e continua procurando
-    if (t->m != NULL) {
-        stack_node *sn = stack_node_construct(t->m, t->c);
-        forward_list_push_front(iterator->stack, sn);
-    }
-    
-    // Se o nó tiver filho a esquerda, adiciona ele na pilha e continua procurando
-    if (t->l != NULL) {
-        forward_list_push_front(iterator->stack, stack_node_construct(t->l, '\0'));
-    }
-
-    // Se a pilha estiver vazia, retorna NULL
-    if (forward_list_is_empty(iterator->stack)) {
-        return NULL;
-    }
-
-    // Se não estiver vazia, pega o primeiro elemento da pilha e continua procurando
-    stack_node *next = forward_list_get_head_value(iterator->stack);
-    forward_list_pop_front(iterator->stack);
-
-    return find_next(iterator, next);
-}
 
 bool TST_iterator_has_next(TST_iterator *iterator) {
     return iterator->current != NULL;
 }
 
 data_type TST_iterator_next(TST_iterator *iterator, char **out_key) {
-    if (iterator->current == NULL) {
-        //throw("TSTIterator: next: no more elements");
+    if (iterator->current == NULL) return NULL;
+
+    node *n = iterator->current;
+
+    while (n->m != NULL) {
+        forward_list_push_head(iterator->stack, stack_node_construct(n->m, n->c));
+        n = n->m;
     }
 
-    *out_key = strdup(iterator->buffer);
-    data_type out_val = iterator->current->val;
+    iterator->buf_index = 0;
+    while (iterator->stack->len > 0) {
+        stack_node *sn = forward_list_pop_head(iterator->stack);
+        iterator->buffer[iterator->buf_index++] = sn->c;
+        n = sn->n;
+        free(sn);
 
-    // confere se a palavra atual é uma substring de outra palavra
-    if(iterator->current->m != NULL){
-        node *out = find_next(iterator, stack_node_construct(iterator->current->m, '\0'));
-        if(out != NULL){
-            iterator->current = out;
-            return out_val;
+        while (n->l != NULL) {
+            forward_list_push_head(iterator->stack, stack_node_construct(n->l, '\0'));
+            n = n->l;
+        }
+
+        if (n->val != NULL) {
+            iterator->current = n;
+            iterator->buffer[iterator->buf_index] = '\0';
+            *out_key = iterator->buffer;
+            return n->val;
         }
     }
 
-    // confere se a lista esta vazia
-    if(forward_list_is_empty(iterator->stack)){
-        iterator->current = NULL;
-        return out_val;
-    }
-
-    // ve qual o proximo node a ser visitado
-    stack_node *next = forward_list_get_head_value(iterator->stack);
-    forward_list_pop_front(iterator->stack);
-
-    node *current = iterator->current;
-
-    // vai retirando os caracteres do buffer ate chegar no node que tem o proximo node a ser visitado
-    while(current != NULL){
-        if(current->r == next->n || current->l == next->n || current->m == next->n){
-            if(current->r == next->n || current->l == next->n){
-                iterator->buffer[--iterator->index] = '\0';
-            }
-            iterator->current = next->n;
-            break;
-        }
-
-        iterator->buffer[--iterator->index] = '\0';
-        current = current->p;
-    }
-
-    iterator->current = find_next(iterator, next);
-
-    return out_val;
+    iterator->current = NULL;
+    return NULL;
 }
 
-static node *find_first(node *t, TST_iterator *iterator) {
-    // Reinicia o buffer e a pilha
-    iterator->index = 0;
-    iterator->stack = forward_list_construct();
+static __TST_iterator_find_leftest(node *n, TST_iterator *iterator) {
+    if (n == NULL) return NULL;
 
-    // Começa a procurar
-    return find_next(iterator, stack_node_construct(t, '\0'));
+    forward_list_push_front(iterator->stack, n);
+
+    while (n->l != NULL) {
+        forward_list_push_front(iterator->stack, n->l);
+        n = n->l;
+    }
+
+    // TODO: parei aqui
+    
+
+    return n;
 }
 
 // inicializar o iterador
 TST_iterator* TST_iterator_init(TST *tst) {
     TST_iterator *iterator = malloc(sizeof(*iterator));
+
     iterator->tst = tst;
-    iterator->buffer = malloc(256); // TODO: tamanho dinamico conforme necessidade
-    // ^^^^
-    // jheam disse que isso aqui é criminoso e não concorda com suas atitudes
-    iterator->index = 0;
-    iterator->current = find_first(tst->root, iterator);
+    iterator->stack = forward_list_init();
+
+    iterator->buf_capacity = 16;
+    iterator->buf_index = 0;
+    iterator->buffer = malloc(iterator->buf_capacity * sizeof(char));
+
+    iterator->current = __TST_iterator_find_leftest(tst->root, iterator);
 
     return iterator;
 }
@@ -259,6 +202,7 @@ TST_iterator* TST_iterator_init(TST *tst) {
 void TST_iterator_free(TST_iterator *iterator) {
     free(iterator->buffer);
     forward_list_destroy(iterator->stack);
+
     free(iterator);
 }
 

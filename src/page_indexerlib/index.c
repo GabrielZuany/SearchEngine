@@ -36,6 +36,10 @@ Index *index_init(StringSt *word_idspageset_map, StringSt *page_idpage_map, char
     return index;
 }
 
+size_t index_get_num_pages(Index *index) {
+    return index->len;
+}
+
 StringSet *index_get_ref_stop_words(Index *index) {
     return index->ref_stop_words;
 }
@@ -89,10 +93,10 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
         }
 
         if (page_count == num_words) {
+            stringset_put(pages, __index_get_page_from_pageid(index, page_id));
+            
             page_count = 0;
             page_id = 0;
-
-            stringset_put(pages, __index_get_page_from_pageid(index, page_id));
         }
 
         if (set_iterator_has_next(curr_iter))
