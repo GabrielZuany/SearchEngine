@@ -18,6 +18,10 @@ struct Index
     StringSet *ref_stop_words; // Set<string>
 };
 
+StringSt* index_get_page_idpage_map(Index* index){
+    return index->page_idpage_map;
+}
+
 Index *index_init(StringSt *word_idspageset_map, StringSt *page_idpage_map, char **idpage_page_map, size_t len, size_t size, StringSet *ref_stop_words)
 {
     Index *index = malloc(sizeof(Index));
