@@ -31,7 +31,7 @@ PageRank* page_rank_init(Index* index){
     return page_rank;
 }
 
-void __page_rank_set_page_idpage_map(PageRank* self, char* folderpath){
+static void __page_rank_set_page_idpage_map(PageRank* self, const char* folderpath){
     char* filepath = utils_pathcat(folderpath, "index.txt");
     FILE* index_file = fopen(filepath, "r");
     if (index_file == NULL) {
@@ -46,7 +46,7 @@ void __page_rank_set_page_idpage_map(PageRank* self, char* folderpath){
 
     // iterate over all lines in index
     char *page_name = NULL;
-    int page_name_length = 0;
+    size_t page_name_length = 0;
     ssize_t read;
     while ((read = getline(&page_name, &page_name_length, index_file)) != -1) {
         if (page_name[read - 1] == '\n')
@@ -71,10 +71,32 @@ void __page_rank_set_page_idpage_map(PageRank* self, char* folderpath){
 }
 
 void page_rank_finish(PageRank* self){
-    for(int i = 0; i < self->n_pages; i++){ 
-        if(self->out_links[i] != NULL){ forward_list_destroy(self->out_links[i]); }
-        if(self->in_links[i] != NULL){ forward_list_destroy(self->in_links[i]); }
+    for (int i = 0; i < self->n_pages; i++){ 
+        if (self->out_links[i] != NULL){
+            Node *curr_node = forward_list_get_head_node(self->out_links[i]);
+            while (curr_node != NULL) {
+                char *curr_val = node_get_value(curr_node);
+                free(curr_val);
+
+                curr_node = forward_list_goto_next(curr_node);
+            }
+
+            forward_list_destroy(self->out_links[i]);
+        }
+
+        if (self->in_links[i] != NULL){
+            Node *curr_node = forward_list_get_head_node(self->in_links[i]);
+            while (curr_node != NULL) {
+                char *curr_val = node_get_value(curr_node);
+                free(curr_val);
+                
+                curr_node = forward_list_goto_next(curr_node);
+            }
+
+            forward_list_destroy(self->in_links[i]);
+        }
     }
+
     free(self->out_links);
     free(self->in_links);
     free(self->page_rank);
@@ -84,12 +106,11 @@ void page_rank_finish(PageRank* self){
     free(self);
 }
 
-PageRank* page_rank_build_links(PageRank* self, char* graph_path){
+PageRank* page_rank_build_links(PageRank* self, const char *input_directory, const char* graph_path) {
     // filename number of links link1 link2 ... linkN
     // 24011.txt 7 3391.txt 12241.txt 12682.txt 6762.txt 30380.txt 17661-8.txt 22322-8.txt
-    __page_rank_set_page_idpage_map(self, graph_path);
+    __page_rank_set_page_idpage_map(self, input_directory);
 
-    graph_path = utils_pathcat(graph_path, "graph.txt");
     FILE* graph_file = fopen(graph_path, "r");
     if (graph_file == NULL) {
         fprintf(stderr, "Error: could not open file %s\n", graph_path);
@@ -110,40 +131,36 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     for(int i = 0; i < self->n_pages; i++){ in_links[i] = forward_list_construct(); }
 
     char* filename = malloc(256 * sizeof(char));
-    int* n_links   = malloc(sizeof(int));
-    char** links   = NULL;
     for(int i = 0; i < n_lines; i++) {
         if (fscanf(graph_file, "%s", filename)) {};
-        if (fscanf(graph_file, "%d", n_links))  {};
-        links = malloc(*(n_links) * sizeof(char*));
-
+        int n_links;
+        if (fscanf(graph_file, "%d", &n_links))  {};
         // add na TST(out) o filename(doc atual) com o tst_out_id associado
         int* pageId = (int*)stringst_get(self->page_idpage_map, filename);
         stringst_put(tst_out_links, filename, pageId);
 
         // add na TST(in) os links com o tst_in_id associado
-        for(int i = 0; i < *(n_links); i++){
-            links[i] = malloc(sizeof(char) * 256);
-            if (fscanf(graph_file, "%s", links[i])) {};
+        for(int i = 0; i < n_links; i++){
+            char *link = malloc(sizeof(char) * 256);
+            if (fscanf(graph_file, "%s", link)) {};
 
-            if(out_links[*pageId] != NULL){ // links[i](out_links[tst_out_id]) -> filename
-                forward_list_push_front(out_links[*pageId], links[i]);
+            if(out_links[*pageId] != NULL){ // link(out_links[tst_out_id]) -> filename
+                forward_list_push_front(out_links[*pageId], link);
             }else{
                 out_links[*pageId] = forward_list_construct();
-                forward_list_push_front(out_links[*pageId], links[i]);
+                forward_list_push_front(out_links[*pageId], link);
             }
 
-            // add na TST(in) o links[i] com o tst_in_id associado
-            if(!stringst_contains(tst_in_links, links[i])){
-                int* pageid = stringst_get(self->page_idpage_map, links[i]);
-                stringst_put(tst_in_links, links[i], pageid);
+            // add na TST(in) o link com o tst_in_id associado
+            if(!stringst_contains(tst_in_links, link)){
+                int* pageid = stringst_get(self->page_idpage_map, link);
+                stringst_put(tst_in_links, link, pageid);
                 forward_list_push_front(in_links[*pageid], strdup(filename));
             }else{
-                int* pageid = stringst_get(self->page_idpage_map, links[i]);
+                int* pageid = stringst_get(self->page_idpage_map, link);
                 forward_list_push_front(in_links[*pageid], strdup(filename));
             }
         }
-        free(links);
     }
     
     self->out_links = out_links;
@@ -153,8 +170,7 @@ PageRank* page_rank_build_links(PageRank* self, char* graph_path){
     
     fclose(graph_file);    
     free(filename);
-    free(n_links);
-    free(graph_path);
+
     return self;
 }
 

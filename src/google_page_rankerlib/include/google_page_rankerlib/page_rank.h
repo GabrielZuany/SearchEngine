@@ -12,7 +12,7 @@ typedef struct PageRank PageRank;
 
 PageRank* page_rank_init(Index* index);
 void page_rank_finish(PageRank* self);
-PageRank* page_rank_build_links(PageRank* self, char* folderpath);
+PageRank* page_rank_build_links(PageRank* self, const char *input_directory, const char* graph_path);
 double page_rank_get(PageRank* self, char* page);
 
 #endif
