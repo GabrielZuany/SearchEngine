@@ -26,7 +26,7 @@ void engine_run(Index *index, PageRank *page_rank, FILE *in, FILE *out) {
 
         fprintf(out, "pr:");
         for (long long int i = 0; i < results; i++)
-            fprintf(out, "%.8lf ", prs[i]);
+            fprintf(out, "%.16lf ", prs[i]);
         
         fprintf(out, "\n");
 
