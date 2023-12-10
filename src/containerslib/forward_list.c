@@ -132,3 +132,31 @@ int forward_list_is_empty(ForwardList *l){
     if(l->head == NULL) return 1;
     return 0;
 }
+
+struct ListIterator {
+    Node *current;
+};
+
+ListIterator *list_iterator_construct(ForwardList *l) {
+    if(l == NULL) return NULL;
+    ListIterator *it = malloc(sizeof(*it));
+
+    it->current = l->head;
+
+    return it;
+}
+
+void list_iterator_free(ListIterator *it) {
+    free(it);
+}
+
+void *list_iterator_next(ListIterator *it) {
+    void *value = node_get_value(it->current);
+    it->current = node_get_next(it->current);
+
+    return value;
+}
+
+bool list_iterator_is_over(ListIterator *it) {
+    return (it->current == NULL);
+}

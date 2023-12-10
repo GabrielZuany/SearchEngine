@@ -3,8 +3,11 @@
 #define _FORWARD_forward_list_H_
 
 #include "node.h"
+#include <stdbool.h>
 
 typedef struct ForwardList ForwardList;
+
+typedef struct ListIterator ListIterator;
 
 Node* forward_list_goto_next(Node *n);
 
@@ -157,5 +160,13 @@ void forward_list_destroy(ForwardList *l);
  * @note Complexity: O(1)
  */
 int forward_list_is_empty(ForwardList *l);
+
+ListIterator *list_iterator_construct(ForwardList *l);
+
+void list_iterator_free(ListIterator *it);
+
+void *list_iterator_next(ListIterator *it);
+
+bool list_iterator_is_over(ListIterator *it);
 
 #endif
