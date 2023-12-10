@@ -90,9 +90,8 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
 
         if (page_count == num_words) {
             page_count = 0;
-            page_id = 0;
-
             stringset_put(pages, __index_get_page_from_pageid(index, page_id));
+            page_id = 0;
         }
 
         if (set_iterator_has_next(curr_iter))
@@ -100,7 +99,7 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
         else
             break;
     }
-    heap_free(heap);
+    /* heap_free(heap); */
 
     return pages;
 }
@@ -109,6 +108,10 @@ static void __index_finish_stringset(char *key, void *value)
 {
     if (key) {}; // warning suppression hihiih
     set_finish(value);
+}
+
+size_t index_get_num_pages(Index *index) {
+    return index->len;
 }
 
 void index_finish(Index *index)
