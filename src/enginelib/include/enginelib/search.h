@@ -15,6 +15,13 @@ struct Search
     Heap *heap_pr_page; // Heap<int, string>
 };
 
+typedef struct{
+    char *page;
+    double page_rank;
+} Page_data;
+
+void __page_data_free_fn(Page_data **data);
+
 long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Search *out);
 
 Heap *enginelib_search_get_ranking(Search *search_result);

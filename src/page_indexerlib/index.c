@@ -49,22 +49,20 @@ static char *__index_get_page_from_pageid(Index *index, size_t page_id)
     return index->idpage_page_map[page_id - 1];
 }
 
-static size_t __index_get_pageid_from_pagename(Index *index, char *page_name)
-{
-    size_t *page_id = stringst_get(index->page_idpage_map, page_name);
-
-    return (size_t)page_id;
-}
-
 static void __index_intersect_pages_heap_derrefed_free_fn(SetIterator **set)
 {
     set_iterator_finish(*set);
 }
 
+static int __common_double_cmp(const double *a, const double *b)
+{
+    return *b - *a;
+}
+
 StringSet *index_intersect_pages(Index *index, StringSet *words) {
     StringSet *pages = stringset_init(); // Set<string>
 
-    Heap *heap = heap_init(MIN_HEAP, 2, __SIZEOF_POINTER__, (free_fn)__index_intersect_pages_heap_derrefed_free_fn);
+    Heap *heap = heap_init(2, __SIZEOF_POINTER__, (free_fn)__index_intersect_pages_heap_derrefed_free_fn, (cmp_fn)__common_double_cmp);
 
     StringSetIterator *iterator = stringset_iterator_init(words);
     while (stringset_iterator_has_next(iterator)) {

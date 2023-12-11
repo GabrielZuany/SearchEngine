@@ -10,7 +10,7 @@ struct Heap {
     size_t len;
     size_t smemb;
     free_fn freer;
-    enum HeapType type;
+    cmp_fn cmp;
 };
 
 void __heap_grow(Heap *heap) {
@@ -21,8 +21,6 @@ void __heap_grow(Heap *heap) {
             realloc(heap->priorities, sizeof(double) * heap->capacity);
     }
 }
-
-double __heap_cmp(Heap *heap, double a, double b) { return heap->type == MAX_HEAP ? a - b : b - a; }
 
 void __heap_swap(Heap *map, size_t i, size_t j) {
     if (i > map->len || j > map->len)
@@ -56,24 +54,20 @@ double __heap_heapify_high(Heap *heap, size_t i) {
     switch (bits) {
     case 0b01:;
         double rdiff =
-            __heap_cmp(heap, heap->priorities[rindx], heap->priorities[i]);
+            heap->cmp((void *)(heap->priorities + rindx), (void *)(heap->priorities + i));
         return rdiff > 0 ? rdiff : 0;
 
     case 0b10:;
         double ldiff =
-            __heap_cmp(heap, heap->priorities[lindx], heap->priorities[i]);
+            heap->cmp((void *)(heap->priorities + lindx), (void *)(heap->priorities + i));
         return ldiff > 0 ? ldiff * -1 : 0;
 
     case 0b11:
         return 0;
     }
 
-    double pp = heap->priorities[i];
-    double pl = heap->priorities[lindx];
-    double pr = heap->priorities[rindx];
-
-    double ldiff = __heap_cmp(heap, pl, pp);
-    double rdiff = __heap_cmp(heap, pr, pp);
+    double ldiff = heap->cmp((void *)(heap->priorities + lindx), (void *)(heap->priorities + i));
+    double rdiff = heap->cmp((void *)(heap->priorities + rindx), (void *)(heap->priorities + i));
 
     int bits2 = 0b01 * (ldiff <= 0) + 0b10 * (rdiff <= 0);
     switch (bits2) {
@@ -160,12 +154,12 @@ double __heap_pop(Heap *heap, byte *out) {
     return spriority;
 }
 
-Heap *heap_init(enum HeapType type, size_t initialPow2Capacity, size_t smemb, free_fn freer) {
+Heap *heap_init(size_t initialPow2Capacity, size_t smemb, free_fn freer, cmp_fn cmp) {
     Heap *heap = malloc(sizeof *heap);
 
     heap->smemb = smemb;
     heap->freer = freer;
-    heap->type = type;
+    heap->cmp = cmp;
 
     heap->capacity = 1;
     heap->capacity <<= initialPow2Capacity;

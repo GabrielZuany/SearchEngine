@@ -8,12 +8,7 @@
 
 typedef struct Heap Heap;
 
-enum HeapType {
-    MIN_HEAP,
-    MAX_HEAP
-};
-
-Heap *heap_init(enum HeapType type, size_t initialPow2Capacity, size_t smemb, free_fn freer);
+Heap *heap_init(size_t initialPow2Capacity, size_t smemb, free_fn freer, cmp_fn cmp);
 
 void heap_push(Heap *self, void *data, double priority);
 
