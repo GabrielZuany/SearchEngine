@@ -20,7 +20,7 @@ typedef struct{
     double page_rank;
 } Page_data;
 
-void __page_data_free_fn(Page_data **data);
+void __page_data_clean(Page_data *data);
 
 long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Search *out);
 

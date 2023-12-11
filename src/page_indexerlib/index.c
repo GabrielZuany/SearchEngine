@@ -54,7 +54,7 @@ static void __index_intersect_pages_heap_derrefed_free_fn(SetIterator **set)
     set_iterator_finish(*set);
 }
 
-static int __common_double_cmp(const double *a, const double *b)
+static int __common_double_cmp(const int *a, const int *b)
 {
     return *b - *a;
 }
@@ -62,7 +62,7 @@ static int __common_double_cmp(const double *a, const double *b)
 StringSet *index_intersect_pages(Index *index, StringSet *words) {
     StringSet *pages = stringset_init(); // Set<string>
 
-    Heap *heap = heap_init(2, __SIZEOF_POINTER__, (free_fn)__index_intersect_pages_heap_derrefed_free_fn, (cmp_fn)__common_double_cmp);
+    Heap *heap = heap_init(2, sizeof(size_t), __SIZEOF_POINTER__, (free_fn)__index_intersect_pages_heap_derrefed_free_fn, (cmp_fn)__common_double_cmp);
 
     StringSetIterator *iterator = stringset_iterator_init(words);
     while (stringset_iterator_has_next(iterator)) {
@@ -77,8 +77,9 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
             return pages;
         }
 
-        SetIterator *iter = set_iterator_init(idspageset);
-        heap_push(heap, &iter, (size_t)set_iterator_next(iter));
+        SetIterator *iter = set_iterator_init(idspageset);        
+        size_t next = (size_t)set_iterator_next(iter);
+        heap_push(heap, &next, &iter);
     }
     stringset_iterator_finish(iterator);
 
@@ -87,8 +88,9 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
     size_t num_words = heap_len(heap);
     bool lazy_break = false;
     while (heap_len(heap) > 0) {
+        size_t curr_page_id;
         SetIterator *curr_iter;
-        size_t curr_page_id = heap_pop(heap, &curr_iter);
+        heap_pop(heap, &curr_page_id, &curr_iter);
         if (page_id != curr_page_id) {
             if(lazy_break) {
                 set_iterator_finish(curr_iter);
@@ -101,19 +103,20 @@ StringSet *index_intersect_pages(Index *index, StringSet *words) {
         }
 
         if (page_count == num_words) {
-            page_count = 0;
             stringset_put(pages, __index_get_page_from_pageid(index, page_id));
+
             page_id = 0;
+            page_count = 0;
         }
 
-        if (set_iterator_has_next(curr_iter))
-            heap_push(heap, &curr_iter, (size_t)set_iterator_next(curr_iter));
+        if (set_iterator_has_next(curr_iter)) {
+            size_t next = (size_t)set_iterator_next(curr_iter);
+            heap_push(heap, &next, &curr_iter);
+        }
         else {
             set_iterator_finish(curr_iter);
             lazy_break = true;
-            /* break; */
         }
-
     }
     heap_free(heap);
 

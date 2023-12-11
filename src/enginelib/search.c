@@ -11,19 +11,9 @@
 
 #include "enginelib/search.h"
 
-static Page_data* __page_data_construct(char *page, double page_rank) {
-    Page_data *page_data = malloc(sizeof(Page_data));
-    page_data->page = page;
-    page_data->page_rank = page_rank;
-    return page_data;
-}
-
-static int __page_data_cmp(const Page_data **a, const Page_data **b) {
+static int __page_data_cmp(const Page_data *page_data_a, const Page_data *page_data_b) {
     // Os documentos devem ser listados em ordem decrescente de PageRank.
     // Empates no PageRank devem ser quebrados pela ordem lexicográfica, crescente, do nome dos documentos.
-
-    const Page_data *page_data_a = *a;
-    const Page_data *page_data_b = *b;
 
     double page_rank_a = page_data_a->page_rank;
     double page_rank_b = page_data_b->page_rank;
@@ -33,13 +23,11 @@ static int __page_data_cmp(const Page_data **a, const Page_data **b) {
     else if (page_rank_a > page_rank_b)
         return 1;
     else
-        return strcmp(page_data_a->page, page_data_b->page);
+        return strcmp(page_data_b->page, page_data_a->page);
 }
 
-void __page_data_free_fn(Page_data **data) {
-    Page_data *page_data = *data;
-    free(page_data->page);
-    free(page_data);
+void __page_data_clean(Page_data *data) {
+    free(data->page);
 }
 
 long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Search *out) {
@@ -76,13 +64,13 @@ long long int enginelib_search(Index *index, PageRank *page_rank, FILE *in, Sear
     stringset_finish(words, NULL);
 
     // TODO: extract PR given pages
-    out->heap_pr_page = heap_init(2, __SIZEOF_POINTER__, (free_fn)__page_data_free_fn, (cmp_fn)__page_data_cmp);
+    out->heap_pr_page = heap_init(2, sizeof(Page_data), sizeof(Page_data), (free_fn)__page_data_clean, (cmp_fn)__page_data_cmp);
     StringSetIterator *iterator = stringset_iterator_init(pages);
     while (stringset_iterator_has_next(iterator)) {
         char *page = strdup(stringset_iterator_next(iterator));
         double pr = page_rank_get(page_rank, page);
-        Page_data *page_data = __page_data_construct(page, pr);
-        heap_push(out->heap_pr_page, &page_data, (size_t)page_data);
+        Page_data page_data = { .page = page, .page_rank = pr };
+        heap_push(out->heap_pr_page, &page_data, &page_data);
     }
     stringset_iterator_finish(iterator);
 

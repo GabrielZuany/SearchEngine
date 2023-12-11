@@ -15,13 +15,13 @@ void engine_run(Index *index, PageRank *page_rank, FILE *in, FILE *out) {
         double prs[results];
         for (long long int i = 0; i < results; i++)
         {
-            Page_data *page;
-            (heap_pop(ranking, &page));
-            prs[i] = page->page_rank;
+            Page_data page;
+            heap_pop(ranking, &page, &page);
+            prs[i] = page.page_rank;
 
-            fprintf(out, "%s ", page->page);
+            fprintf(out, "%s ", page.page);
 
-            __page_data_free_fn(&page);
+            __page_data_clean(&page);
         }
         fprintf(out, "\n");
 

@@ -8,13 +8,13 @@
 
 typedef struct Heap Heap;
 
-Heap *heap_init(size_t initialPow2Capacity, size_t smemb, free_fn freer, cmp_fn cmp);
+Heap *heap_init(size_t initialPow2Capacity, size_t ksmemb, size_t vsmemb, free_fn vfreer, cmp_fn kcmp);
 
-void heap_push(Heap *self, void *data, double priority);
+void heap_push(Heap *self, void *key, void *value);
 
-double heap_pop(Heap *self, void *out);
+void heap_pop(Heap *self, void *out_key, void *out_value);
 
-double heap_peek(Heap *self, void *out);
+void heap_peek(Heap *self, void *out__key, void *out_value);
 
 size_t heap_len(Heap *self);
 

@@ -4,35 +4,40 @@
 #include "containerslib/heap.h"
 
 struct Heap {
-    byte *data;
-    double *priorities;
+    byte *values;
+    byte *keys;
+
     size_t capacity;
     size_t len;
-    size_t smemb;
-    free_fn freer;
-    cmp_fn cmp;
+
+    size_t vsmemb;
+    size_t ksmemb;
+
+    free_fn vfreer;
+
+    cmp_fn kcmp;
 };
 
 void __heap_grow(Heap *heap) {
     if (heap->len + 1 == heap->capacity) {
         heap->capacity <<= 1;
-        heap->data = realloc(heap->data, heap->smemb * heap->capacity);
-        heap->priorities =
-            realloc(heap->priorities, sizeof(double) * heap->capacity);
+        heap->values = realloc(heap->values, heap->vsmemb * heap->capacity);
+        heap->keys =
+            realloc(heap->keys, heap->ksmemb * heap->capacity);
     }
 }
 
 void __heap_swap(Heap *map, size_t i, size_t j) {
     if (i > map->len || j > map->len)
-        exception_throw_index("heap_swap - Index out of bounds");
+        exception_throw_index("heap_swap - Index out_value of bounds");
 
-    memcpy(map->data, map->data + i * map->smemb, map->smemb);
-    memcpy(map->data + i * map->smemb, map->data + j * map->smemb, map->smemb);
-    memcpy(map->data + j * map->smemb, map->data, map->smemb);
+    memcpy(map->keys, map->keys + i * map->ksmemb, map->ksmemb);
+    memcpy(map->keys + i * map->ksmemb, map->keys + j * map->ksmemb, map->ksmemb);
+    memcpy(map->keys + j * map->ksmemb, map->keys, map->ksmemb);
 
-    map->priorities[0] = map->priorities[i];
-    map->priorities[i] = map->priorities[j];
-    map->priorities[j] = map->priorities[0];
+    memcpy(map->values, map->values + i * map->vsmemb, map->vsmemb);
+    memcpy(map->values + i * map->vsmemb, map->values + j * map->vsmemb, map->vsmemb);
+    memcpy(map->values + j * map->vsmemb, map->values, map->vsmemb);
 }
 
 /**
@@ -45,7 +50,7 @@ void __heap_swap(Heap *map, size_t i, size_t j) {
  * @param i The index of the parent.
  * @return double
  */
-double __heap_heapify_high(Heap *heap, size_t i) {
+int __heap_heapify_high(Heap *heap, size_t i) {
     size_t lindx = 2 * i;
     size_t rindx = 2 * i + 1;
 
@@ -53,21 +58,21 @@ double __heap_heapify_high(Heap *heap, size_t i) {
     int bits = 0b01 * (lindx > heap->len) + 0b10 * (rindx > heap->len);
     switch (bits) {
     case 0b01:;
-        double rdiff =
-            heap->cmp((void *)(heap->priorities + rindx), (void *)(heap->priorities + i));
+        int rdiff =
+            heap->kcmp(heap->keys + rindx * heap->ksmemb, heap->keys + i * heap->ksmemb);
         return rdiff > 0 ? rdiff : 0;
 
     case 0b10:;
-        double ldiff =
-            heap->cmp((void *)(heap->priorities + lindx), (void *)(heap->priorities + i));
+        int ldiff =
+            heap->kcmp(heap->keys + lindx * heap->ksmemb, heap->keys + i * heap->ksmemb);
         return ldiff > 0 ? ldiff * -1 : 0;
 
     case 0b11:
         return 0;
     }
 
-    double ldiff = heap->cmp((void *)(heap->priorities + lindx), (void *)(heap->priorities + i));
-    double rdiff = heap->cmp((void *)(heap->priorities + rindx), (void *)(heap->priorities + i));
+    int ldiff = heap->kcmp(heap->keys + lindx * heap->ksmemb, heap->keys + i * heap->ksmemb);
+    int rdiff = heap->kcmp(heap->keys + rindx * heap->ksmemb, heap->keys + i * heap->ksmemb);
 
     int bits2 = 0b01 * (ldiff <= 0) + 0b10 * (rdiff <= 0);
     switch (bits2) {
@@ -113,36 +118,34 @@ void __heap_heapify_down(Heap *heap) {
     }
 }
 
-void __heap_push(Heap *heap, byte *data, double priority) {
+void __heap_push(Heap *heap, byte *key, byte *value) {
     __heap_grow(heap);
 
-    heap->priorities[heap->len + 1] = priority;
-    memcpy(heap->data + (heap->len + 1) * heap->smemb, data, heap->smemb);
+    memcpy(heap->keys + (heap->len + 1) * heap->ksmemb, key, heap->ksmemb);
+    memcpy(heap->values + (heap->len + 1) * heap->vsmemb, value, heap->vsmemb);
     heap->len++;
 
     __heap_heapify_up(heap, heap->len);
 }
 
-double __heap_peek(Heap *heap, byte *out) {
+void __heap_peek(Heap *heap, byte *out_key, byte *out_value) {
     if (heap->len == 0)
         exception_throw_failure("heap_peek - Heap is empty");
 
-    memcpy(out, heap->data + heap->smemb, heap->smemb);
-
-    return heap->priorities[1];
+    memcpy(out_key, heap->keys + heap->ksmemb, heap->ksmemb);
+    memcpy(out_value, heap->values + heap->vsmemb, heap->vsmemb);
 }
 
-double __heap_pop(Heap *heap, byte *out) {
+void __heap_pop(Heap *heap, byte *out_key, byte *out_value) {
     if (heap->len == 0)
         exception_throw_failure("heap_pop - Heap is empty");
 
-    double spriority = heap->priorities[1];
-
-    memcpy(out, heap->data + heap->smemb, heap->smemb);
+    memcpy(out_key, heap->keys + heap->ksmemb, heap->ksmemb);
+    memcpy(out_value, heap->values + heap->vsmemb, heap->vsmemb);
 
     if (heap->len == 1) {
         heap->len--;
-        return spriority;
+        return;
     }
 
     // place the last element in the root
@@ -150,36 +153,35 @@ double __heap_pop(Heap *heap, byte *out) {
     heap->len--;
 
     __heap_heapify_down(heap);
-
-    return spriority;
 }
 
-Heap *heap_init(size_t initialPow2Capacity, size_t smemb, free_fn freer, cmp_fn cmp) {
+Heap *heap_init(size_t initialPow2Capacity, size_t ksmemb, size_t vsmemb, free_fn vfreer, cmp_fn cmp) {
     Heap *heap = malloc(sizeof *heap);
 
-    heap->smemb = smemb;
-    heap->freer = freer;
-    heap->cmp = cmp;
+    heap->ksmemb = ksmemb;
+    heap->vsmemb = vsmemb;
+    heap->vfreer = vfreer;
+    heap->kcmp = cmp;
 
     heap->capacity = 1;
     heap->capacity <<= initialPow2Capacity;
     heap->len = 0;
-    heap->data = malloc(heap->smemb * heap->capacity);
-    heap->priorities = malloc(sizeof(double) * heap->capacity);
+    heap->values = malloc(heap->vsmemb * heap->capacity);
+    heap->keys = malloc(heap->ksmemb * heap->capacity);
 
     return heap;
 }
 
-void heap_push(Heap *self, void *data, double priority) {
-    __heap_push(self, data, priority);
+void heap_push(Heap *self, void *key, void *data) {
+    __heap_push(self, key, data);
 }
 
-double heap_pop(Heap *self, void *out) {
-    return __heap_pop(self, out);
+void heap_pop(Heap *self, void *out_key, void *out_value) {
+    __heap_pop(self, out_key, out_value);
 }
 
-double heap_peek(Heap *self, void *out) {
-    return __heap_peek(self, out);
+void heap_peek(Heap *self, void *out_key, void *out_value) {
+    __heap_peek(self, out_key, out_value);
 }
 
 size_t heap_len(Heap *self) {
@@ -187,11 +189,11 @@ size_t heap_len(Heap *self) {
 }
 
 void heap_free(Heap *self) {
-    if (self->freer)
+    if (self->vfreer)
         for (size_t i = 1; i <= self->len; i++)
-            self->freer(self->data + (i * self->smemb));
+            self->vfreer(self->values + (i * self->vsmemb));
 
-    free(self->data);
-    free(self->priorities);
+    free(self->values);
+    free(self->keys);
     free(self);
 }
